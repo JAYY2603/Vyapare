@@ -1,0 +1,26 @@
+window.translations = {
+  en: {
+    "nav.home": "Home",
+    "nav.datasets": "Datasets",
+    "nav.trends": "Trends",
+    "nav.chatbot": "Chatbot",
+    "nav.users": "Users",
+    "nav.more": "More",
+    "nav.account": "Account",
+    "nav.logout": "Logout",
+    "nav.login": "Login",
+    "nav.register": "Register",
+  },
+  ne: {
+    "nav.home": "होम",
+    "nav.datasets": "डाटासेट",
+    "nav.trends": "प्रवृत्ति",
+    "nav.chatbot": "च्याटबट",
+    "nav.users": "प्रयोगकर्ता",
+    "nav.more": "थप",
+    "nav.account": "खाता",
+    "nav.logout": "लगआउट",
+    "nav.login": "लगइन",
+    "nav.register": "दर्ता",
+  },
+};

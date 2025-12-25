@@ -1,0 +1,112 @@
+{% load static %}
+<nav class="navbar" id="navbar">
+  <div class="navbar-container">
+    <div class="navbar-logo">
+      <a href="{% url 'home:home' %}" class="navbar-logo-link">
+        <img
+          src="{% static 'images/logo2.png' %}"
+          alt="Vyapare Logo"
+          class="logo-img"
+        />
+      </a>
+    </div>
+
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <ul class="nav-menu" id="navMenu">
+      {% if user.is_authenticated %}
+      <li class="nav-item">
+        <a href="{% url 'home:home' %}" class="nav-link" data-i18n="nav.home"
+          >Home</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="{% url 'home:dataset_list' %}"
+          class="nav-link"
+          data-i18n="nav.datasets"
+          >Datasets</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="{% url 'home:trends' %}"
+          class="nav-link"
+          data-i18n="nav.trends"
+          >Trends</a
+        >
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'home:analytics' %}" class="nav-link">Analytics</a>
+      </li>
+      <li class="nav-item">
+        <a
+          href="{% url 'home:user_chatbot' %}"
+          class="nav-link"
+          data-i18n="nav.chatbot"
+          >Chatbot</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="{% url 'home:user_chatbot' %}"
+          class="nav-link"
+          data-i18n="nav.chatbot"
+          >Learn</a
+        >
+      </li>
+      {% if user.is_admin_user %}
+      <li class="nav-item">
+        <a
+          href="{% url 'home:admin_dashboard' %}"
+          class="nav-link"
+          data-i18n="nav.users"
+          >Users</a
+        >
+      </li>
+      {% endif %}
+      <li class="nav-item dropdown">
+        <button
+          class="nav-link dropdown-toggle"
+          id="moreDropdown"
+          data-i18n="nav.more"
+        >
+          More <i class="dropdown-arrow">▼</i>
+        </button>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <a
+            href="{% url 'home:account' %}"
+            class="dropdown-item"
+            data-i18n="nav.account"
+            >Account</a
+          >
+          <a
+            href="{% url 'home:logout' %}"
+            class="dropdown-item logout"
+            data-i18n="nav.logout"
+            >Logout</a
+          >
+        </div>
+      </li>
+      {% endif %}
+
+      <li class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" id="languageDropdown">
+          <span id="currentLanguage">EN</span> <i class="dropdown-arrow">▼</i>
+        </button>
+        <div class="dropdown-menu" id="languageMenu">
+          <a href="#" class="dropdown-item language-option" data-lang="en"
+            >English</a
+          >
+          <a href="#" class="dropdown-item language-option" data-lang="ne"
+            >Nepali</a
+          >
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
