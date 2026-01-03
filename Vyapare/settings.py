@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'Apps.Home.apps.HomeConfig',
+    'Apps.Dataset.apps.DatasetConfig',
 ]
 
 MIDDLEWARE = [
@@ -59,6 +60,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'Apps' / 'Home' / 'template',
+            BASE_DIR / 'Apps' / 'Dataset' / 'template',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,6 +130,8 @@ STATICFILES_DIRS = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+DATASET_STORAGE_ROOT = BASE_DIR / 'dataset_storage'
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Vyapare API',

@@ -11,7 +11,6 @@ urlpatterns = [
     path("logout/", views.logout, name="logout"),
     path("api/register/", views.api_register, name="api_register"),
     path("api/login/", views.api_login, name="api_login"),
-    path("datasets/", views.dataset_list, name="dataset_list"),
     path("trends/", views.trends, name="trends"),
     path("analytics/", views.analytics, name="analytics"),
     path("chatbot/", views.user_chatbot, name="user_chatbot"),

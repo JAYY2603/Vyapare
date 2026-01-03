@@ -100,7 +100,8 @@ Vyapare{% endblock %} {% block content %}
       return;
     }
 
-    window.location.href = data.redirect_url || "{% url 'home:dataset_list' %}";
+    window.location.href =
+      data.redirect_url || "{% url 'dataset:dataset_list' %}";
   });
 </script>
 {% endblock %}

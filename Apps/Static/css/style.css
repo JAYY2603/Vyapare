@@ -899,6 +899,291 @@ main.main-content {
   color: #999;
 }
 
+/* ===== DATASET PAGE ===== */
+.dataset-page {
+  background-color: #f2f2f4;
+  min-height: calc(100vh - 80px);
+  padding: 28px 20px 48px;
+}
+
+.dataset-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dataset-header h1 {
+  color: #4da936;
+  font-size: 3rem;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.dataset-header p {
+  color: #5f6368;
+  font-size: 1.1rem;
+  margin-bottom: 34px;
+}
+
+.dataset-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.dataset-toolbar h2 {
+  color: #4da936;
+  font-size: 2.1rem;
+}
+
+.dataset-table-wrap {
+  background-color: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dataset-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataset-table th {
+  background-color: #65b636;
+  color: #ffffff;
+  text-align: left;
+  padding: 14px 10px;
+  font-size: 1.05rem;
+}
+
+.dataset-table td {
+  padding: 12px 10px;
+  border-top: 1px solid #e5e7eb;
+  color: #5f6368;
+}
+
+.dataset-table tr:nth-child(even) {
+  background-color: #f5f6f7;
+}
+
+.dataset-name {
+  color: #4da936;
+  font-weight: 700;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-sm {
+  padding: 10px 14px;
+  font-size: 0.95rem;
+}
+
+.inline-link {
+  color: #4da936;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1200;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.dataset-modal {
+  width: 100%;
+  max-width: 640px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.3);
+}
+
+.sale-modal {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.inventory-modal {
+  max-width: 780px;
+}
+
+.view-inventory-modal {
+  max-width: 1800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.view-inventory-table-wrap {
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.view-inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1200px;
+}
+
+.view-inventory-table th {
+  background-color: #65b636;
+  color: #ffffff;
+  text-align: left;
+  padding: 14px;
+  font-size: 0.95rem;
+}
+
+.view-inventory-table td {
+  padding: 16px 14px;
+  border-top: 1px solid #e5e7eb;
+  color: #3f444d;
+}
+
+.inline-edit-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.js-cell-action {
+  white-space: nowrap;
+}
+
+.js-cell-action .btn {
+  margin-right: 6px;
+}
+
+.dataset-modal-header {
+  background-color: #65b636;
+  color: #ffffff;
+  padding: 16px;
+}
+
+.dataset-modal-header h3 {
+  font-size: 2rem;
+}
+
+.dataset-modal-body {
+  padding: 22px 16px 16px;
+}
+
+.dataset-modal-body small {
+  color: #5f6368;
+}
+
+.dataset-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+}
+
+.sale-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sale-section-card {
+  border: 1px solid #e4e7eb;
+  border-left: 3px solid #52b631;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.sale-section-card h4 {
+  color: #38a324;
+  margin-bottom: 10px;
+}
+
+.sale-item-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+}
+
+.sale-cart-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.sale-cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sale-cart-table th {
+  background-color: #f3f4f6;
+  padding: 10px;
+  text-align: left;
+  color: #5f6368;
+}
+
+.sale-cart-table td {
+  padding: 10px;
+  border-top: 1px solid #eceff3;
+}
+
+.cart-empty {
+  text-align: center;
+  color: #8a8f98;
+}
+
+.btn-remove-item {
+  border: none;
+  border-radius: 4px;
+  background-color: #e53935;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+}
+
+.btn-remove-item:hover {
+  background-color: #c62828;
+}
+
+.sale-cart-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: #38a324;
+  font-weight: 700;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .hamburger {
@@ -1061,6 +1346,55 @@ main.main-content {
 
   .feature-card {
     flex: 0 0 100%;
+  }
+
+  .dataset-header h1 {
+    font-size: 2rem;
+  }
+
+  .dataset-header p {
+    font-size: 1rem;
+  }
+
+  .dataset-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dataset-toolbar h2 {
+    font-size: 1.6rem;
+  }
+
+  .dataset-table-wrap {
+    overflow-x: auto;
+  }
+
+  .dataset-table {
+    min-width: 700px;
+  }
+
+  .dataset-modal-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .dataset-modal-footer {
+    flex-direction: column;
+  }
+
+  .sale-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-item-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-cart-summary {
+    flex-direction: column;
+  }
+
+  .view-inventory-modal {
+    max-width: 100%;
   }
 }
 

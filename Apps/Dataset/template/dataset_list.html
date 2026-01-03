@@ -1,11 +1,1148 @@
 {% extends 'home/base.html' %} {% block title %}Datasets - Vyapare{% endblock %}
 {% block content %}
-<section class="auth-container">
-  <div class="auth-card">
-    <h1>Datasets</h1>
-    <p class="auth-subtitle">
-      This is your blank datasets page. Add your dataset modules here.
-    </p>
+<section class="dataset-page">
+  <div class="dataset-container">
+    <header class="dataset-header">
+      <h1>Manage Your Datasets</h1>
+      <p>Create datasets and record sales for your business</p>
+    </header>
+
+    <div class="dataset-toolbar">
+      {% if datasets %}
+      <h2>Your Datasets</h2>
+      {% else %}
+      <div></div>
+      {% endif %}
+      <button type="button" class="btn btn-primary" id="openCreateDatasetModal">
+        Create New Dataset
+      </button>
+    </div>
+
+    {% if datasets %}
+    <div class="dataset-table-wrap">
+      <table class="dataset-table">
+        <thead>
+          <tr>
+            <th>Dataset Name</th>
+            <th>Created Date</th>
+            <th>Actions</th>
+            <th>Inventory</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dataset in datasets %}
+          <tr>
+            <td class="dataset-name">{{ dataset.name }}</td>
+            <td>{{ dataset.created_at|date:"d/m/Y H:i" }}</td>
+            <td>
+              <div class="table-actions">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm js-open-sale-modal"
+                  data-dataset-name="{{ dataset.name }}"
+                  data-init-url="{% url 'dataset:api_init_sale' dataset.id %}"
+                  data-save-url="{% url 'dataset:api_record_sale' dataset.id %}"
+                >
+                  Record New Sale
+                </button>
+                <a
+                  href="{% url 'dataset:export_dataset_excel' dataset.id %}"
+                  class="btn btn-primary btn-sm"
+                  >Export Excel File</a
+                >
+              </div>
+            </td>
+            <td>
+              <div class="table-actions">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm js-open-inventory-modal"
+                  data-dataset-name="{{ dataset.name }}"
+                  data-init-url="{% url 'dataset:api_init_inventory' dataset.id %}"
+                  data-save-url="{% url 'dataset:api_create_inventory' dataset.id %}"
+                >
+                  Add Inventory
+                </button>
+                <button
+                  type="button"
+                  class="inline-link js-open-view-inventory-modal"
+                  data-dataset-name="{{ dataset.name }}"
+                  data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}"
+                  data-update-url-template="{% url 'dataset:api_update_inventory' dataset.id 0 %}"
+                >
+                  View Inventory
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
   </div>
 </section>
+
+<div class="modal-backdrop" id="datasetModalBackdrop" hidden>
+  <div
+    class="dataset-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="createDatasetTitle"
+  >
+    <div class="dataset-modal-header">
+      <h3 id="createDatasetTitle">Create New Dataset</h3>
+    </div>
+    <form id="createDatasetForm" class="dataset-modal-body">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="datasetNameInput">Dataset Name</label>
+        <input
+          type="text"
+          id="datasetNameInput"
+          name="dataset_name"
+          placeholder="e.g., Daily Sales March 2026"
+          maxlength="120"
+          required
+        />
+        <small>Enter a unique name for your dataset</small>
+      </div>
+      <p class="field-error" id="datasetModalError"></p>
+      <div class="dataset-modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="cancelCreateDataset"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="submitCreateDataset">
+          Create Dataset
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="saleModalBackdrop" hidden>
+  <div
+    class="dataset-modal sale-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="recordSaleTitle"
+  >
+    <div class="dataset-modal-header">
+      <h3 id="recordSaleTitle">Record New Sale</h3>
+    </div>
+    <div class="dataset-modal-body">
+      <div class="sale-meta-grid">
+        <div class="form-group">
+          <label for="saleCurrentDateTime">Current Date Time</label>
+          <input type="text" id="saleCurrentDateTime" readonly />
+        </div>
+        <div class="form-group">
+          <label for="saleOrderId">Order ID</label>
+          <input type="text" id="saleOrderId" readonly />
+        </div>
+      </div>
+
+      <div class="sale-section-card">
+        <h4>Add Item</h4>
+        <div class="sale-item-grid">
+          <div class="form-group">
+            <label for="saleItemName">Item Name</label>
+            <input
+              type="text"
+              id="saleItemName"
+              placeholder="e.g., Toothbrush"
+            />
+          </div>
+          <div class="form-group">
+            <label for="saleQuantity">Quantity</label>
+            <input type="number" id="saleQuantity" min="1" value="1" />
+          </div>
+          <div class="form-group">
+            <label for="salePrice">Price</label>
+            <input
+              type="number"
+              id="salePrice"
+              min="0"
+              step="0.01"
+              placeholder="e.g., 100"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="saleCategory">Category</label>
+          <input type="text" id="saleCategory" placeholder="e.g., Personal" />
+        </div>
+        <button type="button" class="btn btn-outline" id="addMoreItemsBtn">
+          Add More Items
+        </button>
+      </div>
+
+      <div class="sale-section-card">
+        <h4>Cart</h4>
+        <div class="sale-cart-wrap">
+          <table class="sale-cart-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="saleCartBody">
+              <tr>
+                <td colspan="5" class="cart-empty">No items added yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sale-cart-summary">
+          <p id="saleTotalItems">Total Items: 0</p>
+          <p id="saleTotalPrice">Total Price: Rs. 0.00</p>
+        </div>
+      </div>
+
+      <div class="sale-section-card">
+        <div class="form-group">
+          <label for="salePaymentType">Payment Type for Order</label>
+          <select id="salePaymentType">
+            <option value="">Select Payment Type</option>
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="QR">QR</option>
+            <option value="Credit">Credit</option>
+          </select>
+          <small>This will apply to all items in this order.</small>
+        </div>
+      </div>
+
+      <p class="field-error" id="saleModalError"></p>
+      <div class="dataset-modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelSaleRecord">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="saveSaleRecord">
+          Save Sale Record
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="inventoryModalBackdrop" hidden>
+  <div
+    class="dataset-modal inventory-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="inventoryTitle"
+  >
+    <div class="dataset-modal-header">
+      <h3 id="inventoryTitle">Add Inventory</h3>
+    </div>
+    <form id="inventoryForm" class="dataset-modal-body">
+      <div class="form-group">
+        <label for="inventoryItemId">ItemID</label>
+        <input type="text" id="inventoryItemId" readonly />
+        <small>Auto generated by the system</small>
+      </div>
+
+      <div class="form-group">
+        <label for="inventoryItemName">ItemName</label>
+        <input
+          type="text"
+          id="inventoryItemName"
+          placeholder="Enter item name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="inventoryCategory">ItemCategory</label>
+        <input
+          type="text"
+          id="inventoryCategory"
+          placeholder="Select Category"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="inventoryBarcode">BarcodeNumber</label>
+        <input
+          type="text"
+          id="inventoryBarcode"
+          placeholder="Enter barcode number"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="inventoryCostPrice">CostPrice</label>
+        <input
+          type="number"
+          id="inventoryCostPrice"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="inventorySellingPrice">Selling Price</label>
+        <input
+          type="number"
+          id="inventorySellingPrice"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        />
+      </div>
+
+      <p class="field-error" id="inventoryModalError"></p>
+
+      <div class="dataset-modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelInventoryBtn">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="saveInventoryBtn">
+          Save Inventory Item
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="viewInventoryModalBackdrop" hidden>
+  <div
+    class="dataset-modal view-inventory-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="viewInventoryTitle"
+  >
+    <div class="dataset-modal-header">
+      <h3 id="viewInventoryTitle">Inventory Items</h3>
+    </div>
+    <div class="dataset-modal-body">
+      <p class="field-error" id="viewInventoryError"></p>
+      <div class="view-inventory-table-wrap">
+        <table class="view-inventory-table">
+          <thead>
+            <tr>
+              <th>ItemID</th>
+              <th>ItemName</th>
+              <th>ItemCategory</th>
+              <th>BarcodeNumber</th>
+              <th>CostPrice</th>
+              <th>Selling Price</th>
+              <th>Added On</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="viewInventoryBody">
+            <tr>
+              <td colspan="8" class="cart-empty">No inventory items found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dataset-modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          id="closeViewInventoryBtn"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    const createBtn = document.getElementById("openCreateDatasetModal");
+    const datasetBackdrop = document.getElementById("datasetModalBackdrop");
+    const cancelCreateBtn = document.getElementById("cancelCreateDataset");
+    const createDatasetForm = document.getElementById("createDatasetForm");
+    const datasetNameInput = document.getElementById("datasetNameInput");
+    const datasetErrorEl = document.getElementById("datasetModalError");
+    const submitCreateBtn = document.getElementById("submitCreateDataset");
+
+    const saleBackdrop = document.getElementById("saleModalBackdrop");
+    const saleTitle = document.getElementById("recordSaleTitle");
+    const saleDateTimeInput = document.getElementById("saleCurrentDateTime");
+    const saleOrderInput = document.getElementById("saleOrderId");
+    const saleItemNameInput = document.getElementById("saleItemName");
+    const saleQuantityInput = document.getElementById("saleQuantity");
+    const salePriceInput = document.getElementById("salePrice");
+    const saleCategoryInput = document.getElementById("saleCategory");
+    const salePaymentTypeSelect = document.getElementById("salePaymentType");
+    const saleErrorEl = document.getElementById("saleModalError");
+    const addMoreItemsBtn = document.getElementById("addMoreItemsBtn");
+    const cancelSaleBtn = document.getElementById("cancelSaleRecord");
+    const saveSaleBtn = document.getElementById("saveSaleRecord");
+    const cartBody = document.getElementById("saleCartBody");
+    const totalItemsEl = document.getElementById("saleTotalItems");
+    const totalPriceEl = document.getElementById("saleTotalPrice");
+
+    const inventoryBackdrop = document.getElementById("inventoryModalBackdrop");
+    const inventoryTitle = document.getElementById("inventoryTitle");
+    const inventoryForm = document.getElementById("inventoryForm");
+    const inventoryItemId = document.getElementById("inventoryItemId");
+    const inventoryItemName = document.getElementById("inventoryItemName");
+    const inventoryCategory = document.getElementById("inventoryCategory");
+    const inventoryBarcode = document.getElementById("inventoryBarcode");
+    const inventoryCostPrice = document.getElementById("inventoryCostPrice");
+    const inventorySellingPrice = document.getElementById(
+      "inventorySellingPrice",
+    );
+    const inventoryErrorEl = document.getElementById("inventoryModalError");
+    const cancelInventoryBtn = document.getElementById("cancelInventoryBtn");
+    const saveInventoryBtn = document.getElementById("saveInventoryBtn");
+
+    const viewInventoryBackdrop = document.getElementById(
+      "viewInventoryModalBackdrop",
+    );
+    const viewInventoryTitle = document.getElementById("viewInventoryTitle");
+    const viewInventoryBody = document.getElementById("viewInventoryBody");
+    const viewInventoryError = document.getElementById("viewInventoryError");
+    const closeViewInventoryBtn = document.getElementById(
+      "closeViewInventoryBtn",
+    );
+
+    const saleState = {
+      datasetName: "",
+      initUrl: "",
+      saveUrl: "",
+      items: [],
+    };
+
+    const inventoryState = {
+      datasetName: "",
+      initUrl: "",
+      saveUrl: "",
+    };
+
+    const viewInventoryState = {
+      datasetName: "",
+      listUrl: "",
+      updateUrlTemplate: "",
+    };
+
+    function readCookie(name) {
+      const cookie = document.cookie
+        .split(";")
+        .map(function (part) {
+          return part.trim();
+        })
+        .find(function (part) {
+          return part.startsWith(name + "=");
+        });
+      return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    }
+
+    function openCreateDatasetModal() {
+      datasetBackdrop.hidden = false;
+      document.body.classList.add("modal-open");
+      datasetErrorEl.textContent = "";
+      datasetNameInput.focus();
+    }
+
+    function closeCreateDatasetModal() {
+      datasetBackdrop.hidden = true;
+      document.body.classList.remove("modal-open");
+      createDatasetForm.reset();
+      datasetErrorEl.textContent = "";
+    }
+
+    function clearSaleItemForm() {
+      saleItemNameInput.value = "";
+      saleQuantityInput.value = "1";
+      salePriceInput.value = "";
+      saleCategoryInput.value = "";
+      saleItemNameInput.focus();
+    }
+
+    function renderSaleCart() {
+      if (!saleState.items.length) {
+        cartBody.innerHTML =
+          '<tr><td colspan="5" class="cart-empty">No items added yet</td></tr>';
+        totalItemsEl.textContent = "Total Items: 0";
+        totalPriceEl.textContent = "Total Price: Rs. 0.00";
+        return;
+      }
+
+      const rows = saleState.items
+        .map(function (item, index) {
+          return (
+            "<tr>" +
+            "<td>" +
+            item.item +
+            "</td>" +
+            "<td>" +
+            item.quantity +
+            "</td>" +
+            "<td>Rs. " +
+            Number(item.price).toFixed(2) +
+            "</td>" +
+            "<td>" +
+            item.category +
+            "</td>" +
+            '<td><button type="button" class="btn-remove-item" data-index="' +
+            index +
+            '">X</button></td>' +
+            "</tr>"
+          );
+        })
+        .join("");
+
+      cartBody.innerHTML = rows;
+
+      const totalItems = saleState.items.reduce(function (sum, item) {
+        return sum + Number(item.quantity);
+      }, 0);
+      const totalPrice = saleState.items.reduce(function (sum, item) {
+        return sum + Number(item.price) * Number(item.quantity);
+      }, 0);
+
+      totalItemsEl.textContent = "Total Items: " + totalItems;
+      totalPriceEl.textContent = "Total Price: Rs. " + totalPrice.toFixed(2);
+    }
+
+    function closeSaleModal() {
+      saleBackdrop.hidden = true;
+      document.body.classList.remove("modal-open");
+      saleState.datasetName = "";
+      saleState.initUrl = "";
+      saleState.saveUrl = "";
+      saleState.items = [];
+      saleErrorEl.textContent = "";
+      salePaymentTypeSelect.value = "";
+      saleDateTimeInput.value = "";
+      saleOrderInput.value = "";
+      renderSaleCart();
+      clearSaleItemForm();
+    }
+
+    async function openSaleModal(button) {
+      saleErrorEl.textContent = "";
+      saveSaleBtn.disabled = true;
+      addMoreItemsBtn.disabled = true;
+
+      saleState.datasetName = button.dataset.datasetName || "Dataset";
+      saleState.initUrl = button.dataset.initUrl || "";
+      saleState.saveUrl = button.dataset.saveUrl || "";
+      saleState.items = [];
+
+      try {
+        const response = await fetch(saleState.initUrl, {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          saleErrorEl.textContent =
+            data.message || "Unable to initialize sale.";
+          return;
+        }
+
+        saleTitle.textContent = "Record New Sale - " + saleState.datasetName;
+        saleDateTimeInput.value = data.current_datetime || "";
+        saleOrderInput.value = data.order_id || "";
+        renderSaleCart();
+        saleBackdrop.hidden = false;
+        document.body.classList.add("modal-open");
+      } catch (error) {
+        saleErrorEl.textContent = "Something went wrong. Please try again.";
+      } finally {
+        saveSaleBtn.disabled = false;
+        addMoreItemsBtn.disabled = false;
+      }
+    }
+
+    function addItemToCart() {
+      const itemName = saleItemNameInput.value.trim();
+      const quantity = Number(saleQuantityInput.value);
+      const price = Number(salePriceInput.value);
+      const category = saleCategoryInput.value.trim();
+
+      if (!itemName) {
+        saleErrorEl.textContent = "Item name is required.";
+        return false;
+      }
+
+      if (!quantity || quantity < 1) {
+        saleErrorEl.textContent = "Quantity must be at least 1.";
+        return false;
+      }
+
+      if (Number.isNaN(price) || price < 0) {
+        saleErrorEl.textContent = "Price must be 0 or greater.";
+        return false;
+      }
+
+      if (!category) {
+        saleErrorEl.textContent = "Category is required.";
+        return false;
+      }
+
+      saleState.items.push({
+        item: itemName,
+        quantity: quantity,
+        price: price.toFixed(2),
+        category: category,
+      });
+
+      saleErrorEl.textContent = "";
+      renderSaleCart();
+      clearSaleItemForm();
+      return true;
+    }
+
+    function closeInventoryModal() {
+      inventoryBackdrop.hidden = true;
+      document.body.classList.remove("modal-open");
+      inventoryState.datasetName = "";
+      inventoryState.initUrl = "";
+      inventoryState.saveUrl = "";
+      inventoryForm.reset();
+      inventoryItemId.value = "";
+      inventoryErrorEl.textContent = "";
+    }
+
+    async function openInventoryModal(button) {
+      inventoryState.datasetName = button.dataset.datasetName || "Dataset";
+      inventoryState.initUrl = button.dataset.initUrl || "";
+      inventoryState.saveUrl = button.dataset.saveUrl || "";
+      inventoryErrorEl.textContent = "";
+      saveInventoryBtn.disabled = true;
+
+      try {
+        const response = await fetch(inventoryState.initUrl, {
+          method: "GET",
+          headers: {
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          inventoryErrorEl.textContent =
+            data.message || "Unable to initialize inventory form.";
+          return;
+        }
+
+        inventoryTitle.textContent =
+          "Add Inventory - " + inventoryState.datasetName;
+        inventoryForm.reset();
+        inventoryItemId.value = data.item_id || "";
+        inventoryBackdrop.hidden = false;
+        document.body.classList.add("modal-open");
+        inventoryItemName.focus();
+      } catch (error) {
+        inventoryErrorEl.textContent =
+          "Something went wrong. Please try again.";
+      } finally {
+        saveInventoryBtn.disabled = false;
+      }
+    }
+
+    function closeViewInventoryModal() {
+      viewInventoryBackdrop.hidden = true;
+      document.body.classList.remove("modal-open");
+      viewInventoryState.datasetName = "";
+      viewInventoryState.listUrl = "";
+      viewInventoryState.updateUrlTemplate = "";
+      viewInventoryError.textContent = "";
+      viewInventoryBody.innerHTML =
+        '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+    }
+
+    function renderInventoryRows(items) {
+      if (!items || !items.length) {
+        viewInventoryBody.innerHTML =
+          '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+        return;
+      }
+
+      const rows = items
+        .map(function (item) {
+          const barcode = item.barcode_number || "-";
+          const updateUrl = viewInventoryState.updateUrlTemplate.replace(
+            "/0/update/",
+            "/" + item.inventory_id + "/update/",
+          );
+          return (
+            '<tr data-inventory-id="' +
+            item.inventory_id +
+            '">' +
+            "<td><strong>" +
+            item.item_id +
+            "</strong></td>" +
+            '<td class="js-cell-item-name">' +
+            item.item_name +
+            "</td>" +
+            '<td class="js-cell-item-category">' +
+            item.item_category +
+            "</td>" +
+            '<td class="js-cell-barcode">' +
+            barcode +
+            "</td>" +
+            '<td class="js-cell-cost-price">Rs. ' +
+            Number(item.cost_price).toFixed(2) +
+            "</td>" +
+            '<td class="js-cell-selling-price">Rs. ' +
+            Number(item.selling_price).toFixed(2) +
+            "</td>" +
+            "<td>" +
+            item.created_at +
+            "</td>" +
+            '<td class="js-cell-action"><button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' +
+            updateUrl +
+            '">Edit</button></td>' +
+            "</tr>"
+          );
+        })
+        .join("");
+
+      viewInventoryBody.innerHTML = rows;
+    }
+
+    async function openViewInventoryModal(button) {
+      viewInventoryState.datasetName = button.dataset.datasetName || "Dataset";
+      viewInventoryState.listUrl = button.dataset.listUrl || "";
+      viewInventoryState.updateUrlTemplate =
+        button.dataset.updateUrlTemplate || "";
+      viewInventoryError.textContent = "";
+      viewInventoryBody.innerHTML =
+        '<tr><td colspan="8" class="cart-empty">Loading...</td></tr>';
+
+      try {
+        const response = await fetch(viewInventoryState.listUrl, {
+          method: "GET",
+          headers: {
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          viewInventoryError.textContent =
+            data.message || "Unable to load inventory.";
+          viewInventoryBody.innerHTML =
+            '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+          return;
+        }
+
+        viewInventoryTitle.textContent =
+          "Inventory Items - " + viewInventoryState.datasetName;
+        renderInventoryRows(data.items || []);
+        viewInventoryBackdrop.hidden = false;
+        document.body.classList.add("modal-open");
+      } catch (error) {
+        viewInventoryError.textContent =
+          "Something went wrong. Please try again.";
+        viewInventoryBody.innerHTML =
+          '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+      }
+    }
+
+    createBtn.addEventListener("click", openCreateDatasetModal);
+    cancelCreateBtn.addEventListener("click", closeCreateDatasetModal);
+    cancelSaleBtn.addEventListener("click", closeSaleModal);
+    cancelInventoryBtn.addEventListener("click", closeInventoryModal);
+    closeViewInventoryBtn.addEventListener("click", closeViewInventoryModal);
+
+    document.querySelectorAll(".js-open-sale-modal").forEach(function (button) {
+      button.addEventListener("click", function () {
+        openSaleModal(button);
+      });
+    });
+
+    document
+      .querySelectorAll(".js-open-inventory-modal")
+      .forEach(function (button) {
+        button.addEventListener("click", function () {
+          openInventoryModal(button);
+        });
+      });
+
+    document
+      .querySelectorAll(".js-open-view-inventory-modal")
+      .forEach(function (button) {
+        button.addEventListener("click", function () {
+          openViewInventoryModal(button);
+        });
+      });
+
+    addMoreItemsBtn.addEventListener("click", function () {
+      addItemToCart();
+    });
+
+    datasetBackdrop.addEventListener("click", function (event) {
+      if (event.target === datasetBackdrop) {
+        closeCreateDatasetModal();
+      }
+    });
+
+    saleBackdrop.addEventListener("click", function (event) {
+      if (event.target === saleBackdrop) {
+        closeSaleModal();
+      }
+    });
+
+    inventoryBackdrop.addEventListener("click", function (event) {
+      if (event.target === inventoryBackdrop) {
+        closeInventoryModal();
+      }
+    });
+
+    viewInventoryBackdrop.addEventListener("click", function (event) {
+      if (event.target === viewInventoryBackdrop) {
+        closeViewInventoryModal();
+      }
+    });
+
+    cartBody.addEventListener("click", function (event) {
+      const removeBtn = event.target.closest(".btn-remove-item");
+      if (!removeBtn) {
+        return;
+      }
+
+      const index = Number(removeBtn.dataset.index);
+      if (Number.isInteger(index) && index >= 0) {
+        saleState.items.splice(index, 1);
+        renderSaleCart();
+      }
+    });
+
+    viewInventoryBody.addEventListener("click", async function (event) {
+      const editBtn = event.target.closest(".js-edit-inventory-item");
+      const cancelBtn = event.target.closest(".js-cancel-inline-edit");
+      const saveBtn = event.target.closest(".js-save-inline-edit");
+
+      if (editBtn) {
+        const row = editBtn.closest("tr");
+        const itemName = row
+          .querySelector(".js-cell-item-name")
+          .textContent.trim();
+        const itemCategory = row
+          .querySelector(".js-cell-item-category")
+          .textContent.trim();
+        const barcodeText = row
+          .querySelector(".js-cell-barcode")
+          .textContent.trim();
+        const costText = row
+          .querySelector(".js-cell-cost-price")
+          .textContent.replace("Rs.", "")
+          .trim();
+        const sellingText = row
+          .querySelector(".js-cell-selling-price")
+          .textContent.replace("Rs.", "")
+          .trim();
+
+        row.dataset.originalItemName = itemName;
+        row.dataset.originalItemCategory = itemCategory;
+        row.dataset.originalBarcode = barcodeText === "-" ? "" : barcodeText;
+        row.dataset.originalCostPrice = costText;
+        row.dataset.originalSellingPrice = sellingText;
+        row.dataset.updateUrl = editBtn.dataset.updateUrl;
+
+        row.querySelector(".js-cell-item-name").innerHTML =
+          '<input type="text" class="inline-edit-input" value="' +
+          itemName +
+          '">';
+        row.querySelector(".js-cell-item-category").innerHTML =
+          '<input type="text" class="inline-edit-input" value="' +
+          itemCategory +
+          '">';
+        row.querySelector(".js-cell-barcode").innerHTML =
+          '<input type="text" class="inline-edit-input" value="' +
+          (barcodeText === "-" ? "" : barcodeText) +
+          '">';
+        row.querySelector(".js-cell-cost-price").innerHTML =
+          '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' +
+          costText +
+          '">';
+        row.querySelector(".js-cell-selling-price").innerHTML =
+          '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' +
+          sellingText +
+          '">';
+
+        row.querySelector(".js-cell-action").innerHTML =
+          '<button type="button" class="btn btn-primary btn-sm js-save-inline-edit" data-update-url="' +
+          editBtn.dataset.updateUrl +
+          '">Save</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm js-cancel-inline-edit">Cancel</button>';
+        return;
+      }
+
+      if (cancelBtn) {
+        const row = cancelBtn.closest("tr");
+        const originalItemName = row.dataset.originalItemName || "";
+        const originalItemCategory = row.dataset.originalItemCategory || "";
+        const originalBarcode = row.dataset.originalBarcode || "";
+        const originalCostPrice = row.dataset.originalCostPrice || "0.00";
+        const originalSellingPrice = row.dataset.originalSellingPrice || "0.00";
+
+        row.querySelector(".js-cell-item-name").textContent = originalItemName;
+        row.querySelector(".js-cell-item-category").textContent =
+          originalItemCategory;
+        row.querySelector(".js-cell-barcode").textContent =
+          originalBarcode || "-";
+        row.querySelector(".js-cell-cost-price").textContent =
+          "Rs. " + Number(originalCostPrice).toFixed(2);
+        row.querySelector(".js-cell-selling-price").textContent =
+          "Rs. " + Number(originalSellingPrice).toFixed(2);
+        row.querySelector(".js-cell-action").innerHTML =
+          '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' +
+          row.dataset.updateUrl +
+          '">Edit</button>';
+        return;
+      }
+
+      if (saveBtn) {
+        const row = saveBtn.closest("tr");
+        const inputs = row.querySelectorAll(".inline-edit-input");
+        const payload = {
+          item_name: inputs[0].value.trim(),
+          item_category: inputs[1].value.trim(),
+          barcode_number: inputs[2].value.trim(),
+          cost_price: inputs[3].value.trim() || "0.00",
+          selling_price: inputs[4].value.trim() || "0.00",
+        };
+
+        if (!payload.item_name || !payload.item_category) {
+          viewInventoryError.textContent =
+            "ItemName and ItemCategory are required.";
+          return;
+        }
+
+        saveBtn.disabled = true;
+        viewInventoryError.textContent = "";
+
+        try {
+          const response = await fetch(saveBtn.dataset.updateUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": readCookie("csrftoken"),
+            },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            const errors = data.errors || {};
+            const firstError =
+              (errors.item_name && errors.item_name[0]) ||
+              (errors.item_category && errors.item_category[0]) ||
+              (errors.barcode_number && errors.barcode_number[0]) ||
+              (errors.cost_price && errors.cost_price[0]) ||
+              (errors.selling_price && errors.selling_price[0]);
+            viewInventoryError.textContent =
+              firstError || data.message || "Unable to update inventory item.";
+            saveBtn.disabled = false;
+            return;
+          }
+
+          row.querySelector(".js-cell-item-name").textContent =
+            payload.item_name;
+          row.querySelector(".js-cell-item-category").textContent =
+            payload.item_category;
+          row.querySelector(".js-cell-barcode").textContent =
+            payload.barcode_number || "-";
+          row.querySelector(".js-cell-cost-price").textContent =
+            "Rs. " + Number(payload.cost_price).toFixed(2);
+          row.querySelector(".js-cell-selling-price").textContent =
+            "Rs. " + Number(payload.selling_price).toFixed(2);
+          row.querySelector(".js-cell-action").innerHTML =
+            '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' +
+            saveBtn.dataset.updateUrl +
+            '">Edit</button>';
+          viewInventoryError.textContent = "";
+        } catch (error) {
+          viewInventoryError.textContent =
+            "Something went wrong. Please try again.";
+          saveBtn.disabled = false;
+        }
+      }
+    });
+
+    createDatasetForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const datasetName = datasetNameInput.value.trim();
+      if (!datasetName) {
+        datasetErrorEl.textContent = "Dataset name is required.";
+        return;
+      }
+
+      submitCreateBtn.disabled = true;
+      datasetErrorEl.textContent = "";
+
+      try {
+        const response = await fetch("{% url 'dataset:api_create_dataset' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+          body: JSON.stringify({ dataset_name: datasetName }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          const datasetErrors = data.errors && data.errors.dataset_name;
+          datasetErrorEl.textContent = datasetErrors
+            ? datasetErrors[0]
+            : data.message || "Unable to create dataset.";
+          return;
+        }
+
+        closeCreateDatasetModal();
+        alert(data.message || "Dataset Created");
+        window.location.reload();
+      } catch (error) {
+        datasetErrorEl.textContent = "Something went wrong. Please try again.";
+      } finally {
+        submitCreateBtn.disabled = false;
+      }
+    });
+
+    saveSaleBtn.addEventListener("click", async function () {
+      saleErrorEl.textContent = "";
+
+      const hasTypedItem =
+        saleItemNameInput.value.trim() ||
+        saleCategoryInput.value.trim() ||
+        salePriceInput.value.trim();
+
+      if (hasTypedItem) {
+        const added = addItemToCart();
+        if (!added) {
+          return;
+        }
+      }
+
+      if (!saleState.items.length) {
+        saleErrorEl.textContent = "Add at least one item to cart.";
+        return;
+      }
+
+      const paymentType = salePaymentTypeSelect.value.trim();
+      if (!paymentType) {
+        saleErrorEl.textContent = "Please select payment type.";
+        return;
+      }
+
+      saveSaleBtn.disabled = true;
+      addMoreItemsBtn.disabled = true;
+
+      try {
+        const response = await fetch(saleState.saveUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+          body: JSON.stringify({
+            items: saleState.items,
+            payment_type: paymentType,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          saleErrorEl.textContent =
+            data.message || "Unable to save sale record.";
+          return;
+        }
+
+        closeSaleModal();
+        alert(data.message + " OrderID: " + data.order_id);
+        window.location.reload();
+      } catch (error) {
+        saleErrorEl.textContent = "Something went wrong. Please try again.";
+      } finally {
+        saveSaleBtn.disabled = false;
+        addMoreItemsBtn.disabled = false;
+      }
+    });
+
+    inventoryForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      inventoryErrorEl.textContent = "";
+
+      const payload = {
+        item_id: inventoryItemId.value.trim(),
+        item_name: inventoryItemName.value.trim(),
+        item_category: inventoryCategory.value.trim(),
+        barcode_number: inventoryBarcode.value.trim(),
+        cost_price: inventoryCostPrice.value.trim() || "0.00",
+        selling_price: inventorySellingPrice.value.trim() || "0.00",
+      };
+
+      if (!payload.item_name) {
+        inventoryErrorEl.textContent = "ItemName is required.";
+        return;
+      }
+
+      if (!payload.item_category) {
+        inventoryErrorEl.textContent = "ItemCategory is required.";
+        return;
+      }
+
+      saveInventoryBtn.disabled = true;
+
+      try {
+        const response = await fetch(inventoryState.saveUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": readCookie("csrftoken"),
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          const errors = data.errors || {};
+          const firstError =
+            (errors.item_id && errors.item_id[0]) ||
+            (errors.item_name && errors.item_name[0]) ||
+            (errors.item_category && errors.item_category[0]) ||
+            (errors.barcode_number && errors.barcode_number[0]) ||
+            (errors.cost_price && errors.cost_price[0]) ||
+            (errors.selling_price && errors.selling_price[0]);
+
+          inventoryErrorEl.textContent =
+            firstError || data.message || "Unable to save inventory item.";
+          return;
+        }
+
+        closeInventoryModal();
+        alert(data.message || "Inventory item saved successfully.");
+      } catch (error) {
+        inventoryErrorEl.textContent =
+          "Something went wrong. Please try again.";
+      } finally {
+        saveInventoryBtn.disabled = false;
+      }
+    });
+
+    document.querySelectorAll(".disabled-action").forEach(function (element) {
+      element.addEventListener("click", function (event) {
+        event.preventDefault();
+        alert("This feature will be available soon.");
+      });
+    });
+  })();
+</script>
 {% endblock %}

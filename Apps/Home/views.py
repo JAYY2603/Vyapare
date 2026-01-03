@@ -36,18 +36,13 @@ def register(request):
 
 def login(request):
     if request.user.is_authenticated:
-        return redirect("home:dataset_list")
+        return redirect("dataset:dataset_list")
     return render(request, "home/login.html", {"form": LoginForm()})
 
 
 def logout(request):
     auth_logout(request)
     return redirect("home:home")
-
-
-@login_required
-def dataset_list(request):
-    return render(request, "home/dataset_list.html")
 
 
 @login_required
