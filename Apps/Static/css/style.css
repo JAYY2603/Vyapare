@@ -1128,6 +1128,27 @@ main.main-content {
   gap: 12px;
 }
 
+.barcode-scan-wrap {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.sale-barcode-video {
+  width: 100%;
+  max-width: 420px;
+  min-height: 220px;
+  background: #000;
+  border: 2px solid #38a324;
+  border-radius: 6px;
+  display: block;
+}
+
+#saleBarcodeStatus {
+  margin-top: 8px;
+  color: #5f6368;
+}
+
 .sale-cart-wrap {
   border: 1px solid #e5e7eb;
   border-radius: 8px;

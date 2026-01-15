@@ -1,5 +1,5 @@
-{% extends 'home/base.html' %} {% block title %}Datasets - Vyapare{% endblock %}
-{% block content %}
+{% extends 'home/base.html' %} {% load static %} {% block title %}Datasets -
+Vyapare{% endblock %} {% block content %}
 <section class="dataset-page">
   <div class="dataset-container">
     <header class="dataset-header">
@@ -42,6 +42,7 @@
                   data-dataset-name="{{ dataset.name }}"
                   data-init-url="{% url 'dataset:api_init_sale' dataset.id %}"
                   data-save-url="{% url 'dataset:api_record_sale' dataset.id %}"
+                  data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}"
                 >
                   Record New Sale
                 </button>
@@ -143,6 +144,20 @@
         <div class="form-group">
           <label for="saleOrderId">Order ID</label>
           <input type="text" id="saleOrderId" readonly />
+        </div>
+      </div>
+
+      <div class="sale-section-card">
+        <h4>Scan Barcode (Code 128)</h4>
+        <div class="barcode-scan-wrap">
+          <video
+            id="saleBarcodeVideo"
+            class="sale-barcode-video"
+            autoplay
+            muted
+            playsinline
+          ></video>
+          <p id="saleBarcodeStatus">Opening camera...</p>
         </div>
       </div>
 
@@ -360,6 +375,7 @@
   </div>
 </div>
 {% endblock %} {% block extra_js %}
+<script src="{% static 'dataset_barcode_scanner.js' %}"></script>
 <script>
   (function () {
     const createBtn = document.getElementById("openCreateDatasetModal");
@@ -379,6 +395,8 @@
     const salePriceInput = document.getElementById("salePrice");
     const saleCategoryInput = document.getElementById("saleCategory");
     const salePaymentTypeSelect = document.getElementById("salePaymentType");
+    const saleBarcodeVideo = document.getElementById("saleBarcodeVideo");
+    const saleBarcodeStatus = document.getElementById("saleBarcodeStatus");
     const saleErrorEl = document.getElementById("saleModalError");
     const addMoreItemsBtn = document.getElementById("addMoreItemsBtn");
     const cancelSaleBtn = document.getElementById("cancelSaleRecord");
@@ -416,8 +434,34 @@
       datasetName: "",
       initUrl: "",
       saveUrl: "",
+      listUrl: "",
+      inventoryByBarcode: {},
       items: [],
     };
+
+    const barcodeScanner =
+      window.DatasetBarcodeScanner &&
+      window.DatasetBarcodeScanner.create({
+        videoElement: saleBarcodeVideo,
+        statusElement: saleBarcodeStatus,
+        onDetected: function (rawCode) {
+          const normalized = rawCode.trim();
+          const matched = saleState.inventoryByBarcode[normalized];
+
+          if (!matched) {
+            saleErrorEl.textContent =
+              "No matching inventory item found for barcode: " + normalized;
+            return;
+          }
+
+          saleErrorEl.textContent = "";
+          saleItemNameInput.value = matched.item_name;
+          saleCategoryInput.value = matched.item_category;
+          salePriceInput.value = Number(matched.selling_price).toFixed(2);
+          saleQuantityInput.value = "1";
+          saleItemNameInput.focus();
+        },
+      });
 
     const inventoryState = {
       datasetName: "",
@@ -517,11 +561,16 @@
       saleState.datasetName = "";
       saleState.initUrl = "";
       saleState.saveUrl = "";
+      saleState.listUrl = "";
+      saleState.inventoryByBarcode = {};
       saleState.items = [];
       saleErrorEl.textContent = "";
       salePaymentTypeSelect.value = "";
       saleDateTimeInput.value = "";
       saleOrderInput.value = "";
+      if (barcodeScanner) {
+        barcodeScanner.stop();
+      }
       renderSaleCart();
       clearSaleItemForm();
     }
@@ -534,10 +583,12 @@
       saleState.datasetName = button.dataset.datasetName || "Dataset";
       saleState.initUrl = button.dataset.initUrl || "";
       saleState.saveUrl = button.dataset.saveUrl || "";
+      saleState.listUrl = button.dataset.listUrl || "";
+      saleState.inventoryByBarcode = {};
       saleState.items = [];
 
       try {
-        const response = await fetch(saleState.initUrl, {
+        const response = await fetch(saleState.initUrl + "?_=" + Date.now(), {
           method: "GET",
           cache: "no-store",
           headers: {
@@ -555,9 +606,38 @@
         saleTitle.textContent = "Record New Sale - " + saleState.datasetName;
         saleDateTimeInput.value = data.current_datetime || "";
         saleOrderInput.value = data.order_id || "";
+
+        if (saleState.listUrl) {
+          const inventoryResponse = await fetch(
+            saleState.listUrl + "?_=" + Date.now(),
+            {
+              method: "GET",
+              cache: "no-store",
+              headers: {
+                "X-CSRFToken": readCookie("csrftoken"),
+              },
+            },
+          );
+          if (inventoryResponse.ok) {
+            const inventoryData = await inventoryResponse.json();
+            const map = {};
+            (inventoryData.items || []).forEach(function (item) {
+              const barcode = (item.barcode_number || "").trim();
+              if (barcode) {
+                map[barcode] = item;
+              }
+            });
+            saleState.inventoryByBarcode = map;
+          }
+        }
+
         renderSaleCart();
         saleBackdrop.hidden = false;
         document.body.classList.add("modal-open");
+
+        if (barcodeScanner) {
+          barcodeScanner.start();
+        }
       } catch (error) {
         saleErrorEl.textContent = "Something went wrong. Please try again.";
       } finally {

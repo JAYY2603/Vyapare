@@ -125,6 +125,7 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'Apps' / 'Static',
+    BASE_DIR / 'Apps' / 'Dataset' / 'Barcode',
 ]
 
 REST_FRAMEWORK = {
