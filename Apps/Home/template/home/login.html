@@ -1,46 +1,31 @@
-{% extends 'home/base.html' %} {% load static %} {% block title %}Login -
-Vyapare{% endblock %} {% block content %}
+{% extends 'home/base.html' %} {% load static %} {% block title %}Login - Vyapare{% endblock %} {% block content %}
 <div class="auth-container">
   <div class="auth-card">
-    <h1>Welcome Back</h1>
-    <p class="auth-subtitle">Login to your Vyapare account</p>
+    <h1 data-i18n="login.title">Welcome Back</h1>
+    <p class="auth-subtitle" data-i18n="login.subtitle">Login to your Vyapare account</p>
 
     <form method="POST" class="auth-form" id="loginForm">
       {% csrf_token %}
       <div class="form-group">
-        <label for="id_email">Email</label>
-        <input
-          type="email"
-          id="id_email"
-          name="email"
-          placeholder="Enter your email"
-          autocomplete="email"
-          required
-        />
+        <label for="id_email" data-i18n="login.email">Email</label>
+        <input type="email" id="id_email" name="email" placeholder="Enter your email" data-i18n-placeholder="login.email.placeholder" autocomplete="email" required />
         <div class="field-error" id="emailError"></div>
       </div>
 
       <div class="form-group">
-        <label for="id_password">Password</label>
-        <input
-          type="password"
-          id="id_password"
-          name="password"
-          placeholder="Enter your password"
-          autocomplete="current-password"
-          required
-        />
+        <label for="id_password" data-i18n="login.password">Password</label>
+        <input type="password" id="id_password" name="password" placeholder="Enter your password" data-i18n-placeholder="login.password.placeholder" autocomplete="current-password" required />
         <div class="field-error" id="passwordError"></div>
       </div>
 
       <div class="field-error" id="loginApiError"></div>
-      <button type="submit" class="btn btn-primary btn-block">Login</button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="login.button">Login</button>
     </form>
 
     <div class="auth-footer">
       <p>
-        Don't have an account?
-        <a href="{% url 'home:register' %}">Create account</a>
+        <span data-i18n="login.noAccount">Don't have an account?</span>
+        <a href="{% url 'home:register' %}" data-i18n="login.createAccount">Create account</a>
       </p>
     </div>
   </div>
@@ -86,9 +71,7 @@ Vyapare{% endblock %} {% block content %}
         Object.entries(data.errors).forEach(([field, messages]) => {
           const errorNode = document.getElementById(`${field}Error`);
           if (errorNode) {
-            errorNode.textContent = Array.isArray(messages)
-              ? messages.join(" ")
-              : messages;
+            errorNode.textContent = Array.isArray(messages) ? messages.join(" ") : messages;
           }
         });
       }
@@ -100,8 +83,7 @@ Vyapare{% endblock %} {% block content %}
       return;
     }
 
-    window.location.href =
-      data.redirect_url || "{% url 'dataset:dataset_list' %}";
+    window.location.href = data.redirect_url || "{% url 'dataset:dataset_list' %}";
   });
 </script>
 {% endblock %}

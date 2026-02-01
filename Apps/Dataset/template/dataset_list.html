@@ -1,21 +1,18 @@
-{% extends 'home/base.html' %} {% load static %} {% block title %}Datasets -
-Vyapare{% endblock %} {% block content %}
+{% extends 'home/base.html' %} {% load static %} {% block title %}Datasets - Vyapare{% endblock %} {% block content %}
 <section class="dataset-page">
   <div class="dataset-container">
     <header class="dataset-header">
-      <h1>Manage Your Datasets</h1>
-      <p>Create datasets and record sales for your business</p>
+      <h1 data-i18n="dataset.title">Manage Your Datasets</h1>
+      <p data-i18n="dataset.subtitle">Create datasets and record sales for your business</p>
     </header>
 
     <div class="dataset-toolbar">
       {% if datasets %}
-      <h2>Your Datasets</h2>
+      <h2 data-i18n="dataset.yourDatasets">Your Datasets</h2>
       {% else %}
       <div></div>
       {% endif %}
-      <button type="button" class="btn btn-primary" id="openCreateDatasetModal">
-        Create New Dataset
-      </button>
+      <button type="button" class="btn btn-primary" id="openCreateDatasetModal" data-i18n="dataset.createButton">Create New Dataset</button>
     </div>
 
     {% if datasets %}
@@ -23,10 +20,10 @@ Vyapare{% endblock %} {% block content %}
       <table class="dataset-table">
         <thead>
           <tr>
-            <th>Dataset Name</th>
-            <th>Created Date</th>
-            <th>Actions</th>
-            <th>Inventory</th>
+            <th data-i18n="dataset.table.name">Dataset Name</th>
+            <th data-i18n="dataset.table.created">Created Date</th>
+            <th data-i18n="dataset.table.actions">Actions</th>
+            <th data-i18n="dataset.table.inventory">Inventory</th>
           </tr>
         </thead>
         <tbody>
@@ -36,43 +33,14 @@ Vyapare{% endblock %} {% block content %}
             <td>{{ dataset.created_at|date:"d/m/Y H:i" }}</td>
             <td>
               <div class="table-actions">
-                <button
-                  type="button"
-                  class="btn btn-primary btn-sm js-open-sale-modal"
-                  data-dataset-name="{{ dataset.name }}"
-                  data-init-url="{% url 'dataset:api_init_sale' dataset.id %}"
-                  data-save-url="{% url 'dataset:api_record_sale' dataset.id %}"
-                  data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}"
-                >
-                  Record New Sale
-                </button>
-                <a
-                  href="{% url 'dataset:export_dataset_excel' dataset.id %}"
-                  class="btn btn-primary btn-sm"
-                  >Export Excel File</a
-                >
+                <button type="button" class="btn btn-primary btn-sm js-open-sale-modal" data-dataset-name="{{ dataset.name }}" data-init-url="{% url 'dataset:api_init_sale' dataset.id %}" data-save-url="{% url 'dataset:api_record_sale' dataset.id %}" data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}" data-i18n="dataset.recordSale">Record New Sale</button>
+                <a href="{% url 'dataset:export_dataset_excel' dataset.id %}" class="btn btn-primary btn-sm" data-i18n="dataset.exportExcel">Export Excel File</a>
               </div>
             </td>
             <td>
               <div class="table-actions">
-                <button
-                  type="button"
-                  class="btn btn-primary btn-sm js-open-inventory-modal"
-                  data-dataset-name="{{ dataset.name }}"
-                  data-init-url="{% url 'dataset:api_init_inventory' dataset.id %}"
-                  data-save-url="{% url 'dataset:api_create_inventory' dataset.id %}"
-                >
-                  Add Inventory
-                </button>
-                <button
-                  type="button"
-                  class="inline-link js-open-view-inventory-modal"
-                  data-dataset-name="{{ dataset.name }}"
-                  data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}"
-                  data-update-url-template="{% url 'dataset:api_update_inventory' dataset.id 0 %}"
-                >
-                  View Inventory
-                </button>
+                <button type="button" class="btn btn-primary btn-sm js-open-inventory-modal" data-dataset-name="{{ dataset.name }}" data-init-url="{% url 'dataset:api_init_inventory' dataset.id %}" data-save-url="{% url 'dataset:api_create_inventory' dataset.id %}" data-i18n="dataset.addInventory">Add Inventory</button>
+                <button type="button" class="inline-link js-open-view-inventory-modal" data-dataset-name="{{ dataset.name }}" data-list-url="{% url 'dataset:api_list_inventory' dataset.id %}" data-update-url-template="{% url 'dataset:api_update_inventory' dataset.id 0 %}" data-i18n="dataset.viewInventory">View Inventory</button>
               </div>
             </td>
           </tr>
@@ -85,119 +53,76 @@ Vyapare{% endblock %} {% block content %}
 </section>
 
 <div class="modal-backdrop" id="datasetModalBackdrop" hidden>
-  <div
-    class="dataset-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="createDatasetTitle"
-  >
+  <div class="dataset-modal" role="dialog" aria-modal="true" aria-labelledby="createDatasetTitle">
     <div class="dataset-modal-header">
-      <h3 id="createDatasetTitle">Create New Dataset</h3>
+      <h3 id="createDatasetTitle" data-i18n="dataset.modal.create">Create New Dataset</h3>
     </div>
     <form id="createDatasetForm" class="dataset-modal-body">
       {% csrf_token %}
       <div class="form-group">
-        <label for="datasetNameInput">Dataset Name</label>
-        <input
-          type="text"
-          id="datasetNameInput"
-          name="dataset_name"
-          placeholder="e.g., Daily Sales March 2026"
-          maxlength="120"
-          required
-        />
-        <small>Enter a unique name for your dataset</small>
+        <label for="datasetNameInput" data-i18n="dataset.modal.datasetName">Dataset Name</label>
+        <input type="text" id="datasetNameInput" name="dataset_name" placeholder="e.g., Daily Sales March 2026" data-i18n-placeholder="dataset.modal.placeholder" maxlength="120" required />
+        <small data-i18n="dataset.modal.hint">Enter a unique name for your dataset</small>
       </div>
       <p class="field-error" id="datasetModalError"></p>
       <div class="dataset-modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="cancelCreateDataset"
-        >
-          Cancel
-        </button>
-        <button type="submit" class="btn btn-primary" id="submitCreateDataset">
-          Create Dataset
-        </button>
+        <button type="button" class="btn btn-secondary" id="cancelCreateDataset" data-i18n="dataset.modal.cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="submitCreateDataset" data-i18n="dataset.modal.create">Create Dataset</button>
       </div>
     </form>
   </div>
 </div>
 
 <div class="modal-backdrop" id="saleModalBackdrop" hidden>
-  <div
-    class="dataset-modal sale-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="recordSaleTitle"
-  >
+  <div class="dataset-modal sale-modal" role="dialog" aria-modal="true" aria-labelledby="recordSaleTitle">
     <div class="dataset-modal-header">
-      <h3 id="recordSaleTitle">Record New Sale</h3>
+      <h3 id="recordSaleTitle" data-i18n="sale.modal.title">Record New Sale</h3>
     </div>
     <div class="dataset-modal-body">
       <div class="sale-meta-grid">
         <div class="form-group">
-          <label for="saleCurrentDateTime">Current Date Time</label>
+          <label for="saleCurrentDateTime" data-i18n="sale.currentDateTime">Current Date Time</label>
           <input type="text" id="saleCurrentDateTime" readonly />
         </div>
         <div class="form-group">
-          <label for="saleOrderId">Order ID</label>
+          <label for="saleOrderId" data-i18n="sale.orderId">Order ID</label>
           <input type="text" id="saleOrderId" readonly />
         </div>
       </div>
 
       <div class="sale-section-card">
-        <h4>Scan Barcode (Code 128)</h4>
+        <h4 data-i18n="sale.scanBarcode">Scan Barcode (Code 128)</h4>
         <div class="barcode-scan-wrap">
-          <video
-            id="saleBarcodeVideo"
-            class="sale-barcode-video"
-            autoplay
-            muted
-            playsinline
-          ></video>
-          <p id="saleBarcodeStatus">Opening camera...</p>
+          <video id="saleBarcodeVideo" class="sale-barcode-video" autoplay muted playsinline></video>
+          <p id="saleBarcodeStatus" data-i18n="sale.openingCamera">Opening camera...</p>
         </div>
       </div>
 
       <div class="sale-section-card">
-        <h4>Add Item</h4>
+        <h4 data-i18n="sale.addItem">Add Item</h4>
         <div class="sale-item-grid">
           <div class="form-group">
-            <label for="saleItemName">Item Name</label>
-            <input
-              type="text"
-              id="saleItemName"
-              placeholder="e.g., Toothbrush"
-            />
+            <label for="saleItemName" data-i18n="sale.itemName">Item Name</label>
+            <input type="text" id="saleItemName" placeholder="e.g., Toothbrush" data-i18n-placeholder="sale.itemPlaceholder" />
           </div>
           <div class="form-group">
-            <label for="saleQuantity">Quantity</label>
+            <label for="saleQuantity" data-i18n="sale.quantity">Quantity</label>
             <input type="number" id="saleQuantity" min="1" value="1" />
           </div>
           <div class="form-group">
-            <label for="salePrice">Price</label>
-            <input
-              type="number"
-              id="salePrice"
-              min="0"
-              step="0.01"
-              placeholder="e.g., 100"
-            />
+            <label for="salePrice" data-i18n="sale.price">Price</label>
+            <input type="number" id="salePrice" min="0" step="0.01" placeholder="e.g., 100" data-i18n-placeholder="sale.pricePlaceholder" />
           </div>
         </div>
         <div class="form-group">
-          <label for="saleCategory">Category</label>
-          <input type="text" id="saleCategory" placeholder="e.g., Personal" />
+          <label for="saleCategory" data-i18n="sale.category">Category</label>
+          <input type="text" id="saleCategory" placeholder="e.g., Personal" data-i18n-placeholder="sale.categoryPlaceholder" />
         </div>
-        <button type="button" class="btn btn-outline" id="addMoreItemsBtn">
-          Add More Items
-        </button>
+        <button type="button" class="btn btn-outline" id="addMoreItemsBtn" data-i18n="sale.addMoreItems">Add More Items</button>
       </div>
 
       <div class="sale-section-card">
-        <h4>Cart</h4>
+        <h4 data-i18n="sale.cart">Cart</h4>
         <div class="sale-cart-wrap">
           <table class="sale-cart-table">
             <thead>
@@ -211,133 +136,91 @@ Vyapare{% endblock %} {% block content %}
             </thead>
             <tbody id="saleCartBody">
               <tr>
-                <td colspan="5" class="cart-empty">No items added yet</td>
+                <td colspan="5" class="cart-empty" data-i18n="sale.cartEmpty">No items added yet</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="sale-cart-summary">
-          <p id="saleTotalItems">Total Items: 0</p>
-          <p id="saleTotalPrice">Total Price: Rs. 0.00</p>
+          <p id="saleTotalItems" data-translatable-text="sale.totalItems">Total Items: 0</p>
+          <p id="saleTotalPrice" data-translatable-text="sale.totalPrice">Total Price: Rs. 0.00</p>
         </div>
       </div>
 
       <div class="sale-section-card">
         <div class="form-group">
-          <label for="salePaymentType">Payment Type for Order</label>
+          <label for="salePaymentType" data-i18n="sale.paymentType">Payment Type for Order</label>
           <select id="salePaymentType">
-            <option value="">Select Payment Type</option>
-            <option value="Cash">Cash</option>
-            <option value="Card">Card</option>
-            <option value="QR">QR</option>
-            <option value="Credit">Credit</option>
+            <option value="" data-i18n="sale.selectPayment">Select Payment Type</option>
+            <option value="Cash" data-i18n="sale.cash">Cash</option>
+            <option value="Card" data-i18n="sale.card">Card</option>
+            <option value="QR" data-i18n="sale.qr">QR</option>
+            <option value="Credit" data-i18n="sale.credit">Credit</option>
           </select>
-          <small>This will apply to all items in this order.</small>
+          <small data-i18n="sale.paymentHint">This will apply to all items in this order.</small>
         </div>
       </div>
 
       <p class="field-error" id="saleModalError"></p>
       <div class="dataset-modal-footer">
-        <button type="button" class="btn btn-secondary" id="cancelSaleRecord">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-primary" id="saveSaleRecord">
-          Save Sale Record
-        </button>
+        <button type="button" class="btn btn-secondary" id="cancelSaleRecord" data-i18n="sale.cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveSaleRecord" data-i18n="sale.save">Save Sale Record</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="inventoryModalBackdrop" hidden>
-  <div
-    class="dataset-modal inventory-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="inventoryTitle"
-  >
+  <div class="dataset-modal inventory-modal" role="dialog" aria-modal="true" aria-labelledby="inventoryTitle">
     <div class="dataset-modal-header">
-      <h3 id="inventoryTitle">Add Inventory</h3>
+      <h3 id="inventoryTitle" data-i18n="inventory.modal.add">Add Inventory</h3>
     </div>
     <form id="inventoryForm" class="dataset-modal-body">
       <div class="form-group">
-        <label for="inventoryItemId">ItemID</label>
+        <label for="inventoryItemId" data-i18n="inventory.itemId">ItemID</label>
         <input type="text" id="inventoryItemId" readonly />
-        <small>Auto generated by the system</small>
+        <small data-i18n="inventory.hint">Auto generated by the system</small>
       </div>
 
       <div class="form-group">
-        <label for="inventoryItemName">ItemName</label>
-        <input
-          type="text"
-          id="inventoryItemName"
-          placeholder="Enter item name"
-        />
+        <label for="inventoryItemName" data-i18n="inventory.itemName">ItemName</label>
+        <input type="text" id="inventoryItemName" placeholder="Enter item name" data-i18n-placeholder="inventory.itemNamePlaceholder" />
       </div>
 
       <div class="form-group">
-        <label for="inventoryCategory">ItemCategory</label>
-        <input
-          type="text"
-          id="inventoryCategory"
-          placeholder="Select Category"
-        />
+        <label for="inventoryCategory" data-i18n="inventory.itemCategory">ItemCategory</label>
+        <input type="text" id="inventoryCategory" placeholder="Select Category" data-i18n-placeholder="inventory.categoryPlaceholder" />
       </div>
 
       <div class="form-group">
-        <label for="inventoryBarcode">BarcodeNumber</label>
-        <input
-          type="text"
-          id="inventoryBarcode"
-          placeholder="Enter barcode number"
-        />
+        <label for="inventoryBarcode" data-i18n="inventory.barcode">BarcodeNumber</label>
+        <input type="text" id="inventoryBarcode" placeholder="Enter barcode number" data-i18n-placeholder="inventory.barcodePlaceholder" />
       </div>
 
       <div class="form-group">
-        <label for="inventoryCostPrice">CostPrice</label>
-        <input
-          type="number"
-          id="inventoryCostPrice"
-          min="0"
-          step="0.01"
-          placeholder="0.00"
-        />
+        <label for="inventoryCostPrice" data-i18n="inventory.costPrice">CostPrice</label>
+        <input type="number" id="inventoryCostPrice" min="0" step="0.01" placeholder="0.00" />
       </div>
 
       <div class="form-group">
-        <label for="inventorySellingPrice">Selling Price</label>
-        <input
-          type="number"
-          id="inventorySellingPrice"
-          min="0"
-          step="0.01"
-          placeholder="0.00"
-        />
+        <label for="inventorySellingPrice" data-i18n="inventory.sellingPrice">Selling Price</label>
+        <input type="number" id="inventorySellingPrice" min="0" step="0.01" placeholder="0.00" />
       </div>
 
       <p class="field-error" id="inventoryModalError"></p>
 
       <div class="dataset-modal-footer">
-        <button type="button" class="btn btn-secondary" id="cancelInventoryBtn">
-          Cancel
-        </button>
-        <button type="submit" class="btn btn-primary" id="saveInventoryBtn">
-          Save Inventory Item
-        </button>
+        <button type="button" class="btn btn-secondary" id="cancelInventoryBtn" data-i18n="inventory.cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="saveInventoryBtn" data-i18n="inventory.save">Save Inventory Item</button>
       </div>
     </form>
   </div>
 </div>
 
 <div class="modal-backdrop" id="viewInventoryModalBackdrop" hidden>
-  <div
-    class="dataset-modal view-inventory-modal"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="viewInventoryTitle"
-  >
+  <div class="dataset-modal view-inventory-modal" role="dialog" aria-modal="true" aria-labelledby="viewInventoryTitle">
     <div class="dataset-modal-header">
-      <h3 id="viewInventoryTitle">Inventory Items</h3>
+      <h3 id="viewInventoryTitle" data-i18n="inventory.view.title">Inventory Items</h3>
     </div>
     <div class="dataset-modal-body">
       <p class="field-error" id="viewInventoryError"></p>
@@ -345,14 +228,14 @@ Vyapare{% endblock %} {% block content %}
         <table class="view-inventory-table">
           <thead>
             <tr>
-              <th>ItemID</th>
-              <th>ItemName</th>
-              <th>ItemCategory</th>
-              <th>BarcodeNumber</th>
-              <th>CostPrice</th>
-              <th>Selling Price</th>
+              <th data-i18n="inventory.view.itemId">ItemID</th>
+              <th data-i18n="inventory.view.itemName">ItemName</th>
+              <th data-i18n="inventory.view.itemCategory">ItemCategory</th>
+              <th data-i18n="inventory.view.barcode">BarcodeNumber</th>
+              <th data-i18n="inventory.view.costPrice">CostPrice</th>
+              <th data-i18n="inventory.view.sellingPrice">Selling Price</th>
               <th>Added On</th>
-              <th>Action</th>
+              <th data-i18n="inventory.view.actions">Action</th>
             </tr>
           </thead>
           <tbody id="viewInventoryBody">
@@ -363,13 +246,7 @@ Vyapare{% endblock %} {% block content %}
         </table>
       </div>
       <div class="dataset-modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="closeViewInventoryBtn"
-        >
-          Close
-        </button>
+        <button type="button" class="btn btn-secondary" id="closeViewInventoryBtn" data-i18n="inventory.view.close">Close</button>
       </div>
     </div>
   </div>
@@ -413,22 +290,16 @@ Vyapare{% endblock %} {% block content %}
     const inventoryCategory = document.getElementById("inventoryCategory");
     const inventoryBarcode = document.getElementById("inventoryBarcode");
     const inventoryCostPrice = document.getElementById("inventoryCostPrice");
-    const inventorySellingPrice = document.getElementById(
-      "inventorySellingPrice",
-    );
+    const inventorySellingPrice = document.getElementById("inventorySellingPrice");
     const inventoryErrorEl = document.getElementById("inventoryModalError");
     const cancelInventoryBtn = document.getElementById("cancelInventoryBtn");
     const saveInventoryBtn = document.getElementById("saveInventoryBtn");
 
-    const viewInventoryBackdrop = document.getElementById(
-      "viewInventoryModalBackdrop",
-    );
+    const viewInventoryBackdrop = document.getElementById("viewInventoryModalBackdrop");
     const viewInventoryTitle = document.getElementById("viewInventoryTitle");
     const viewInventoryBody = document.getElementById("viewInventoryBody");
     const viewInventoryError = document.getElementById("viewInventoryError");
-    const closeViewInventoryBtn = document.getElementById(
-      "closeViewInventoryBtn",
-    );
+    const closeViewInventoryBtn = document.getElementById("closeViewInventoryBtn");
 
     const saleState = {
       datasetName: "",
@@ -449,8 +320,7 @@ Vyapare{% endblock %} {% block content %}
           const matched = saleState.inventoryByBarcode[normalized];
 
           if (!matched) {
-            saleErrorEl.textContent =
-              "No matching inventory item found for barcode: " + normalized;
+            saleErrorEl.textContent = "No matching inventory item found for barcode: " + normalized;
             return;
           }
 
@@ -511,8 +381,7 @@ Vyapare{% endblock %} {% block content %}
 
     function renderSaleCart() {
       if (!saleState.items.length) {
-        cartBody.innerHTML =
-          '<tr><td colspan="5" class="cart-empty">No items added yet</td></tr>';
+        cartBody.innerHTML = '<tr><td colspan="5" class="cart-empty">No items added yet</td></tr>';
         totalItemsEl.textContent = "Total Items: 0";
         totalPriceEl.textContent = "Total Price: Rs. 0.00";
         return;
@@ -520,25 +389,7 @@ Vyapare{% endblock %} {% block content %}
 
       const rows = saleState.items
         .map(function (item, index) {
-          return (
-            "<tr>" +
-            "<td>" +
-            item.item +
-            "</td>" +
-            "<td>" +
-            item.quantity +
-            "</td>" +
-            "<td>Rs. " +
-            Number(item.price).toFixed(2) +
-            "</td>" +
-            "<td>" +
-            item.category +
-            "</td>" +
-            '<td><button type="button" class="btn-remove-item" data-index="' +
-            index +
-            '">X</button></td>' +
-            "</tr>"
-          );
+          return "<tr>" + "<td>" + item.item + "</td>" + "<td>" + item.quantity + "</td>" + "<td>Rs. " + Number(item.price).toFixed(2) + "</td>" + "<td>" + item.category + "</td>" + '<td><button type="button" class="btn-remove-item" data-index="' + index + '">X</button></td>' + "</tr>";
         })
         .join("");
 
@@ -598,8 +449,7 @@ Vyapare{% endblock %} {% block content %}
         const data = await response.json();
 
         if (!response.ok) {
-          saleErrorEl.textContent =
-            data.message || "Unable to initialize sale.";
+          saleErrorEl.textContent = data.message || "Unable to initialize sale.";
           return;
         }
 
@@ -608,16 +458,13 @@ Vyapare{% endblock %} {% block content %}
         saleOrderInput.value = data.order_id || "";
 
         if (saleState.listUrl) {
-          const inventoryResponse = await fetch(
-            saleState.listUrl + "?_=" + Date.now(),
-            {
-              method: "GET",
-              cache: "no-store",
-              headers: {
-                "X-CSRFToken": readCookie("csrftoken"),
-              },
+          const inventoryResponse = await fetch(saleState.listUrl + "?_=" + Date.now(), {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+              "X-CSRFToken": readCookie("csrftoken"),
             },
-          );
+          });
           if (inventoryResponse.ok) {
             const inventoryData = await inventoryResponse.json();
             const map = {};
@@ -713,21 +560,18 @@ Vyapare{% endblock %} {% block content %}
         const data = await response.json();
 
         if (!response.ok) {
-          inventoryErrorEl.textContent =
-            data.message || "Unable to initialize inventory form.";
+          inventoryErrorEl.textContent = data.message || "Unable to initialize inventory form.";
           return;
         }
 
-        inventoryTitle.textContent =
-          "Add Inventory - " + inventoryState.datasetName;
+        inventoryTitle.textContent = "Add Inventory - " + inventoryState.datasetName;
         inventoryForm.reset();
         inventoryItemId.value = data.item_id || "";
         inventoryBackdrop.hidden = false;
         document.body.classList.add("modal-open");
         inventoryItemName.focus();
       } catch (error) {
-        inventoryErrorEl.textContent =
-          "Something went wrong. Please try again.";
+        inventoryErrorEl.textContent = "Something went wrong. Please try again.";
       } finally {
         saveInventoryBtn.disabled = false;
       }
@@ -740,24 +584,19 @@ Vyapare{% endblock %} {% block content %}
       viewInventoryState.listUrl = "";
       viewInventoryState.updateUrlTemplate = "";
       viewInventoryError.textContent = "";
-      viewInventoryBody.innerHTML =
-        '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+      viewInventoryBody.innerHTML = '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
     }
 
     function renderInventoryRows(items) {
       if (!items || !items.length) {
-        viewInventoryBody.innerHTML =
-          '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+        viewInventoryBody.innerHTML = '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
         return;
       }
 
       const rows = items
         .map(function (item) {
           const barcode = item.barcode_number || "-";
-          const updateUrl = viewInventoryState.updateUrlTemplate.replace(
-            "/0/update/",
-            "/" + item.inventory_id + "/update/",
-          );
+          const updateUrl = viewInventoryState.updateUrlTemplate.replace("/0/update/", "/" + item.inventory_id + "/update/");
           return (
             '<tr data-inventory-id="' +
             item.inventory_id +
@@ -797,11 +636,9 @@ Vyapare{% endblock %} {% block content %}
     async function openViewInventoryModal(button) {
       viewInventoryState.datasetName = button.dataset.datasetName || "Dataset";
       viewInventoryState.listUrl = button.dataset.listUrl || "";
-      viewInventoryState.updateUrlTemplate =
-        button.dataset.updateUrlTemplate || "";
+      viewInventoryState.updateUrlTemplate = button.dataset.updateUrlTemplate || "";
       viewInventoryError.textContent = "";
-      viewInventoryBody.innerHTML =
-        '<tr><td colspan="8" class="cart-empty">Loading...</td></tr>';
+      viewInventoryBody.innerHTML = '<tr><td colspan="8" class="cart-empty">Loading...</td></tr>';
 
       try {
         const response = await fetch(viewInventoryState.listUrl, {
@@ -813,23 +650,18 @@ Vyapare{% endblock %} {% block content %}
         const data = await response.json();
 
         if (!response.ok) {
-          viewInventoryError.textContent =
-            data.message || "Unable to load inventory.";
-          viewInventoryBody.innerHTML =
-            '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+          viewInventoryError.textContent = data.message || "Unable to load inventory.";
+          viewInventoryBody.innerHTML = '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
           return;
         }
 
-        viewInventoryTitle.textContent =
-          "Inventory Items - " + viewInventoryState.datasetName;
+        viewInventoryTitle.textContent = "Inventory Items - " + viewInventoryState.datasetName;
         renderInventoryRows(data.items || []);
         viewInventoryBackdrop.hidden = false;
         document.body.classList.add("modal-open");
       } catch (error) {
-        viewInventoryError.textContent =
-          "Something went wrong. Please try again.";
-        viewInventoryBody.innerHTML =
-          '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
+        viewInventoryError.textContent = "Something went wrong. Please try again.";
+        viewInventoryBody.innerHTML = '<tr><td colspan="8" class="cart-empty">No inventory items found</td></tr>';
       }
     }
 
@@ -845,21 +677,17 @@ Vyapare{% endblock %} {% block content %}
       });
     });
 
-    document
-      .querySelectorAll(".js-open-inventory-modal")
-      .forEach(function (button) {
-        button.addEventListener("click", function () {
-          openInventoryModal(button);
-        });
+    document.querySelectorAll(".js-open-inventory-modal").forEach(function (button) {
+      button.addEventListener("click", function () {
+        openInventoryModal(button);
       });
+    });
 
-    document
-      .querySelectorAll(".js-open-view-inventory-modal")
-      .forEach(function (button) {
-        button.addEventListener("click", function () {
-          openViewInventoryModal(button);
-        });
+    document.querySelectorAll(".js-open-view-inventory-modal").forEach(function (button) {
+      button.addEventListener("click", function () {
+        openViewInventoryModal(button);
       });
+    });
 
     addMoreItemsBtn.addEventListener("click", function () {
       addItemToCart();
@@ -909,23 +737,11 @@ Vyapare{% endblock %} {% block content %}
 
       if (editBtn) {
         const row = editBtn.closest("tr");
-        const itemName = row
-          .querySelector(".js-cell-item-name")
-          .textContent.trim();
-        const itemCategory = row
-          .querySelector(".js-cell-item-category")
-          .textContent.trim();
-        const barcodeText = row
-          .querySelector(".js-cell-barcode")
-          .textContent.trim();
-        const costText = row
-          .querySelector(".js-cell-cost-price")
-          .textContent.replace("Rs.", "")
-          .trim();
-        const sellingText = row
-          .querySelector(".js-cell-selling-price")
-          .textContent.replace("Rs.", "")
-          .trim();
+        const itemName = row.querySelector(".js-cell-item-name").textContent.trim();
+        const itemCategory = row.querySelector(".js-cell-item-category").textContent.trim();
+        const barcodeText = row.querySelector(".js-cell-barcode").textContent.trim();
+        const costText = row.querySelector(".js-cell-cost-price").textContent.replace("Rs.", "").trim();
+        const sellingText = row.querySelector(".js-cell-selling-price").textContent.replace("Rs.", "").trim();
 
         row.dataset.originalItemName = itemName;
         row.dataset.originalItemCategory = itemCategory;
@@ -934,32 +750,13 @@ Vyapare{% endblock %} {% block content %}
         row.dataset.originalSellingPrice = sellingText;
         row.dataset.updateUrl = editBtn.dataset.updateUrl;
 
-        row.querySelector(".js-cell-item-name").innerHTML =
-          '<input type="text" class="inline-edit-input" value="' +
-          itemName +
-          '">';
-        row.querySelector(".js-cell-item-category").innerHTML =
-          '<input type="text" class="inline-edit-input" value="' +
-          itemCategory +
-          '">';
-        row.querySelector(".js-cell-barcode").innerHTML =
-          '<input type="text" class="inline-edit-input" value="' +
-          (barcodeText === "-" ? "" : barcodeText) +
-          '">';
-        row.querySelector(".js-cell-cost-price").innerHTML =
-          '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' +
-          costText +
-          '">';
-        row.querySelector(".js-cell-selling-price").innerHTML =
-          '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' +
-          sellingText +
-          '">';
+        row.querySelector(".js-cell-item-name").innerHTML = '<input type="text" class="inline-edit-input" value="' + itemName + '">';
+        row.querySelector(".js-cell-item-category").innerHTML = '<input type="text" class="inline-edit-input" value="' + itemCategory + '">';
+        row.querySelector(".js-cell-barcode").innerHTML = '<input type="text" class="inline-edit-input" value="' + (barcodeText === "-" ? "" : barcodeText) + '">';
+        row.querySelector(".js-cell-cost-price").innerHTML = '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' + costText + '">';
+        row.querySelector(".js-cell-selling-price").innerHTML = '<input type="number" min="0" step="0.01" class="inline-edit-input" value="' + sellingText + '">';
 
-        row.querySelector(".js-cell-action").innerHTML =
-          '<button type="button" class="btn btn-primary btn-sm js-save-inline-edit" data-update-url="' +
-          editBtn.dataset.updateUrl +
-          '">Save</button>' +
-          '<button type="button" class="btn btn-secondary btn-sm js-cancel-inline-edit">Cancel</button>';
+        row.querySelector(".js-cell-action").innerHTML = '<button type="button" class="btn btn-primary btn-sm js-save-inline-edit" data-update-url="' + editBtn.dataset.updateUrl + '">Save</button>' + '<button type="button" class="btn btn-secondary btn-sm js-cancel-inline-edit">Cancel</button>';
         return;
       }
 
@@ -972,18 +769,11 @@ Vyapare{% endblock %} {% block content %}
         const originalSellingPrice = row.dataset.originalSellingPrice || "0.00";
 
         row.querySelector(".js-cell-item-name").textContent = originalItemName;
-        row.querySelector(".js-cell-item-category").textContent =
-          originalItemCategory;
-        row.querySelector(".js-cell-barcode").textContent =
-          originalBarcode || "-";
-        row.querySelector(".js-cell-cost-price").textContent =
-          "Rs. " + Number(originalCostPrice).toFixed(2);
-        row.querySelector(".js-cell-selling-price").textContent =
-          "Rs. " + Number(originalSellingPrice).toFixed(2);
-        row.querySelector(".js-cell-action").innerHTML =
-          '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' +
-          row.dataset.updateUrl +
-          '">Edit</button>';
+        row.querySelector(".js-cell-item-category").textContent = originalItemCategory;
+        row.querySelector(".js-cell-barcode").textContent = originalBarcode || "-";
+        row.querySelector(".js-cell-cost-price").textContent = "Rs. " + Number(originalCostPrice).toFixed(2);
+        row.querySelector(".js-cell-selling-price").textContent = "Rs. " + Number(originalSellingPrice).toFixed(2);
+        row.querySelector(".js-cell-action").innerHTML = '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' + row.dataset.updateUrl + '">Edit</button>';
         return;
       }
 
@@ -999,8 +789,7 @@ Vyapare{% endblock %} {% block content %}
         };
 
         if (!payload.item_name || !payload.item_category) {
-          viewInventoryError.textContent =
-            "ItemName and ItemCategory are required.";
+          viewInventoryError.textContent = "ItemName and ItemCategory are required.";
           return;
         }
 
@@ -1020,36 +809,21 @@ Vyapare{% endblock %} {% block content %}
 
           if (!response.ok) {
             const errors = data.errors || {};
-            const firstError =
-              (errors.item_name && errors.item_name[0]) ||
-              (errors.item_category && errors.item_category[0]) ||
-              (errors.barcode_number && errors.barcode_number[0]) ||
-              (errors.cost_price && errors.cost_price[0]) ||
-              (errors.selling_price && errors.selling_price[0]);
-            viewInventoryError.textContent =
-              firstError || data.message || "Unable to update inventory item.";
+            const firstError = (errors.item_name && errors.item_name[0]) || (errors.item_category && errors.item_category[0]) || (errors.barcode_number && errors.barcode_number[0]) || (errors.cost_price && errors.cost_price[0]) || (errors.selling_price && errors.selling_price[0]);
+            viewInventoryError.textContent = firstError || data.message || "Unable to update inventory item.";
             saveBtn.disabled = false;
             return;
           }
 
-          row.querySelector(".js-cell-item-name").textContent =
-            payload.item_name;
-          row.querySelector(".js-cell-item-category").textContent =
-            payload.item_category;
-          row.querySelector(".js-cell-barcode").textContent =
-            payload.barcode_number || "-";
-          row.querySelector(".js-cell-cost-price").textContent =
-            "Rs. " + Number(payload.cost_price).toFixed(2);
-          row.querySelector(".js-cell-selling-price").textContent =
-            "Rs. " + Number(payload.selling_price).toFixed(2);
-          row.querySelector(".js-cell-action").innerHTML =
-            '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' +
-            saveBtn.dataset.updateUrl +
-            '">Edit</button>';
+          row.querySelector(".js-cell-item-name").textContent = payload.item_name;
+          row.querySelector(".js-cell-item-category").textContent = payload.item_category;
+          row.querySelector(".js-cell-barcode").textContent = payload.barcode_number || "-";
+          row.querySelector(".js-cell-cost-price").textContent = "Rs. " + Number(payload.cost_price).toFixed(2);
+          row.querySelector(".js-cell-selling-price").textContent = "Rs. " + Number(payload.selling_price).toFixed(2);
+          row.querySelector(".js-cell-action").innerHTML = '<button type="button" class="btn btn-primary btn-sm js-edit-inventory-item" data-update-url="' + saveBtn.dataset.updateUrl + '">Edit</button>';
           viewInventoryError.textContent = "";
         } catch (error) {
-          viewInventoryError.textContent =
-            "Something went wrong. Please try again.";
+          viewInventoryError.textContent = "Something went wrong. Please try again.";
           saveBtn.disabled = false;
         }
       }
@@ -1080,9 +854,7 @@ Vyapare{% endblock %} {% block content %}
         const data = await response.json();
         if (!response.ok) {
           const datasetErrors = data.errors && data.errors.dataset_name;
-          datasetErrorEl.textContent = datasetErrors
-            ? datasetErrors[0]
-            : data.message || "Unable to create dataset.";
+          datasetErrorEl.textContent = datasetErrors ? datasetErrors[0] : data.message || "Unable to create dataset.";
           return;
         }
 
@@ -1099,10 +871,7 @@ Vyapare{% endblock %} {% block content %}
     saveSaleBtn.addEventListener("click", async function () {
       saleErrorEl.textContent = "";
 
-      const hasTypedItem =
-        saleItemNameInput.value.trim() ||
-        saleCategoryInput.value.trim() ||
-        salePriceInput.value.trim();
+      const hasTypedItem = saleItemNameInput.value.trim() || saleCategoryInput.value.trim() || salePriceInput.value.trim();
 
       if (hasTypedItem) {
         const added = addItemToCart();
@@ -1140,8 +909,7 @@ Vyapare{% endblock %} {% block content %}
 
         const data = await response.json();
         if (!response.ok) {
-          saleErrorEl.textContent =
-            data.message || "Unable to save sale record.";
+          saleErrorEl.textContent = data.message || "Unable to save sale record.";
           return;
         }
 
@@ -1194,24 +962,16 @@ Vyapare{% endblock %} {% block content %}
         const data = await response.json();
         if (!response.ok) {
           const errors = data.errors || {};
-          const firstError =
-            (errors.item_id && errors.item_id[0]) ||
-            (errors.item_name && errors.item_name[0]) ||
-            (errors.item_category && errors.item_category[0]) ||
-            (errors.barcode_number && errors.barcode_number[0]) ||
-            (errors.cost_price && errors.cost_price[0]) ||
-            (errors.selling_price && errors.selling_price[0]);
+          const firstError = (errors.item_id && errors.item_id[0]) || (errors.item_name && errors.item_name[0]) || (errors.item_category && errors.item_category[0]) || (errors.barcode_number && errors.barcode_number[0]) || (errors.cost_price && errors.cost_price[0]) || (errors.selling_price && errors.selling_price[0]);
 
-          inventoryErrorEl.textContent =
-            firstError || data.message || "Unable to save inventory item.";
+          inventoryErrorEl.textContent = firstError || data.message || "Unable to save inventory item.";
           return;
         }
 
         closeInventoryModal();
         alert(data.message || "Inventory item saved successfully.");
       } catch (error) {
-        inventoryErrorEl.textContent =
-          "Something went wrong. Please try again.";
+        inventoryErrorEl.textContent = "Something went wrong. Please try again.";
       } finally {
         saveInventoryBtn.disabled = false;
       }

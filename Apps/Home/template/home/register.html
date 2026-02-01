@@ -1,60 +1,37 @@
-{% extends 'home/base.html' %} {% load static %} {% block title %}Register -
-Vyapare{% endblock %} {% block content %}
+{% extends 'home/base.html' %} {% load static %} {% block title %}Register - Vyapare{% endblock %} {% block content %}
 <div class="auth-container">
   <div class="auth-card">
-    <h1>Create Account</h1>
-    <p class="auth-subtitle">Join Vyapare to manage your business data</p>
+    <h1 data-i18n="register.title">Create Account</h1>
+    <p class="auth-subtitle" data-i18n="register.subtitle">Join Vyapare to manage your business data</p>
 
     <form method="POST" class="auth-form" id="registerForm">
       {% csrf_token %}
       <div class="form-group">
-        <label for="id_full_name">Full Name</label>
-        <input
-          type="text"
-          id="id_full_name"
-          name="full_name"
-          placeholder="Enter your full name"
-          autocomplete="name"
-          required
-        />
+        <label for="id_full_name" data-i18n="register.fullName">Full Name</label>
+        <input type="text" id="id_full_name" name="full_name" placeholder="Enter your full name" data-i18n-placeholder="register.fullName.placeholder" autocomplete="name" required />
         <div class="field-error" id="full_nameError"></div>
       </div>
 
       <div class="form-group">
-        <label for="id_email">Email</label>
-        <input
-          type="email"
-          id="id_email"
-          name="email"
-          placeholder="Enter your email"
-          autocomplete="email"
-          required
-        />
+        <label for="id_email" data-i18n="register.email">Email</label>
+        <input type="email" id="id_email" name="email" placeholder="Enter your email" data-i18n-placeholder="register.email.placeholder" autocomplete="email" required />
         <div class="field-error" id="emailError"></div>
       </div>
 
       <div class="form-group">
-        <label for="id_password">Password</label>
-        <input
-          type="password"
-          id="id_password"
-          name="password"
-          placeholder="Enter your password"
-          autocomplete="new-password"
-          required
-        />
+        <label for="id_password" data-i18n="register.password">Password</label>
+        <input type="password" id="id_password" name="password" placeholder="Enter your password" data-i18n-placeholder="register.password.placeholder" autocomplete="new-password" required />
         <div class="field-error" id="passwordError"></div>
       </div>
 
       <div class="field-error" id="registerApiError"></div>
-      <button type="submit" class="btn btn-primary btn-block">
-        Create account
-      </button>
+      <button type="submit" class="btn btn-primary btn-block" data-i18n="register.button">Create account</button>
     </form>
 
     <div class="auth-footer">
       <p>
-        Already have an account? <a href="{% url 'home:login' %}">Login here</a>
+        <span data-i18n="register.hasAccount">Already have an account?</span>
+        <a href="{% url 'home:login' %}" data-i18n="register.loginLink">Login here</a>
       </p>
     </div>
   </div>
@@ -63,6 +40,25 @@ Vyapare{% endblock %} {% block content %}
 <script>
   const registerForm = document.getElementById("registerForm");
   const registerApiError = document.getElementById("registerApiError");
+
+  const errorMessageMap = {
+    "Full name is required.": "error.fullNameRequired",
+    "An account with this email already exists.": "error.emailExists",
+    "Invalid email or password.": "error.invalidEmailPassword",
+    "Please fix the highlighted errors.": "error.fixErrors",
+    "This field may not be blank.": "error.emailBlank",
+    "Enter a valid email address.": "error.emailInvalid",
+    "Ensure this field has at least 8 characters.": "error.passwordMinLength",
+    "This password is too common.": "error.passwordCommon",
+    "This password is entirely numeric.": "error.passwordNumeric",
+    "Registration successful.": "error.registrationSuccess",
+  };
+
+  const translateErrorMessage = (message) => {
+    const dictionary = window.translations?.[localStorage.getItem("vyapareLanguage") || "en"] || window.translations?.en || {};
+    const translationKey = errorMessageMap[message];
+    return translationKey && dictionary[translationKey] ? dictionary[translationKey] : message;
+  };
 
   const clearRegisterErrors = () => {
     registerApiError.textContent = "";
@@ -101,15 +97,14 @@ Vyapare{% endblock %} {% block content %}
         Object.entries(data.errors).forEach(([field, messages]) => {
           const errorNode = document.getElementById(`${field}Error`);
           if (errorNode) {
-            errorNode.textContent = Array.isArray(messages)
-              ? messages.join(" ")
-              : messages;
+            const translatedMessages = (Array.isArray(messages) ? messages : [messages]).map(translateErrorMessage);
+            errorNode.textContent = translatedMessages.join(" ");
           }
         });
       }
 
       if (data.message) {
-        registerApiError.textContent = data.message;
+        registerApiError.textContent = translateErrorMessage(data.message);
       }
 
       return;

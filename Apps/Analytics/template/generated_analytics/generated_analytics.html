@@ -1,0 +1,220 @@
+{% extends 'home/base.html' %} {% block title %}Generated Analytics - Vyapare{% endblock %} {% block extra_css %}
+<style>
+  .generated-analytics-page {
+    padding: 28px 16px 40px;
+  }
+
+  .generated-analytics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .generated-analytics-header {
+    margin-bottom: 18px;
+  }
+
+  .generated-analytics-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: #1f2937;
+  }
+
+  .dataset-chip {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #edf6ed;
+    border: 1px solid #cfe7cf;
+    color: #2c6b2c;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  .analytics-workspace {
+    display: block;
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card {
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    min-height: 115px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .metric-card:hover {
+    border-color: #4b9a4b;
+  }
+
+  .metric-card h3 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    color: #1f2937;
+  }
+
+  .metric-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #5b6470;
+  }
+
+  .analytics-workspace.selected {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .analytics-workspace.selected .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card.hidden {
+    display: none;
+  }
+
+  .metric-card.active {
+    border-color: #2f8f2f;
+    box-shadow: 0 0 0 2px rgba(47, 143, 47, 0.16);
+  }
+
+  .analytics-panel {
+    display: none;
+    min-height: 520px;
+    border: 1px dashed #a9b3bf;
+    border-radius: 10px;
+    background: #fff;
+    padding: 16px;
+  }
+
+  .analytics-panel.visible {
+    display: block;
+  }
+
+  .analytics-panel h2 {
+    margin: 0 0 8px;
+    color: #1f2937;
+    font-size: 20px;
+  }
+
+  .analytics-empty-state {
+    height: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7b8794;
+    border: 1px dashed #d0d7df;
+    border-radius: 8px;
+    background: #fafcfe;
+  }
+
+  @media (max-width: 900px) {
+    .metric-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .analytics-workspace.selected {
+      grid-template-columns: 1fr;
+    }
+
+    .analytics-panel {
+      min-height: 340px;
+    }
+
+    .analytics-empty-state {
+      height: 260px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<section class="generated-analytics-page">
+  <div class="generated-analytics-container">
+    <header class="generated-analytics-header">
+      <h1>Generated Analytics</h1>
+    </header>
+
+    <div class="dataset-chip">Dataset: {{ dataset_name }}</div>
+
+    <div class="analytics-workspace" id="analyticsWorkspace">
+      <div class="metric-grid" id="metricGrid">
+        <button class="metric-card" data-title="Sales Overview" type="button">
+          <h3>Sales Overview</h3>
+          <p>Quick totals and order distribution</p>
+        </button>
+        <button class="metric-card" data-title="Revenue Trend" type="button">
+          <h3>Revenue Trend</h3>
+          <p>Revenue movement over time</p>
+        </button>
+        <button class="metric-card" data-title="Top Selling Items" type="button">
+          <h3>Top Selling Items</h3>
+          <p>Best performing products</p>
+        </button>
+        <button class="metric-card" data-title="Category Performance" type="button">
+          <h3>Category Performance</h3>
+          <p>Sales split by category</p>
+        </button>
+        <button class="metric-card" data-title="Payment Method Split" type="button">
+          <h3>Payment Method Split</h3>
+          <p>Cash, Card, QR and Credit share</p>
+        </button>
+        <button class="metric-card" data-title="Order Volume" type="button">
+          <h3>Order Volume</h3>
+          <p>Order count and density</p>
+        </button>
+        <button class="metric-card" data-title="Price Band Analysis" type="button">
+          <h3>Price Band Analysis</h3>
+          <p>Performance by price range</p>
+        </button>
+        <button class="metric-card" data-title="Inventory Risk" type="button">
+          <h3>Inventory Risk</h3>
+          <p>Low stock and risk flags</p>
+        </button>
+        <button class="metric-card" data-title="Day-wise Pattern" type="button">
+          <h3>Day-wise Pattern</h3>
+          <p>Weekly and day trends</p>
+        </button>
+      </div>
+
+      <aside class="analytics-panel" id="analyticsPanel">
+        <h2 id="panelTitle">Analytics</h2>
+        <div class="analytics-empty-state">Analytics window is currently blank.</div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    const workspace = document.getElementById("analyticsWorkspace");
+    const panel = document.getElementById("analyticsPanel");
+    const panelTitle = document.getElementById("panelTitle");
+    const cards = document.querySelectorAll(".metric-card");
+
+    cards.forEach(function (card) {
+      card.addEventListener("click", function () {
+        const title = card.getAttribute("data-title") || "Analytics";
+
+        cards.forEach(function (other) {
+          other.classList.remove("active");
+          if (other !== card) {
+            other.classList.add("hidden");
+          }
+        });
+
+        card.classList.add("active");
+        workspace.classList.add("selected");
+        panel.classList.add("visible");
+        panelTitle.textContent = title;
+      });
+    });
+  })();
+</script>
+{% endblock %}

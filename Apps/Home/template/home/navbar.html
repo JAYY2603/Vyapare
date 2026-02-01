@@ -22,16 +22,16 @@
         <a href="{% url 'dataset:dataset_list' %}" class="nav-link" data-i18n="nav.datasets">Datasets</a>
       </li>
       <li class="nav-item">
-        <a href="{% url 'home:trends' %}" class="nav-link" data-i18n="nav.trends">Trends</a>
-      </li>
-      <li class="nav-item">
-        <a href="{% url 'analytics:upload_dataset' %}" class="nav-link">Analytics</a>
+        <a href="{% url 'analytics:upload_dataset' %}" class="nav-link" data-i18n="nav.analytics">Analytics</a>
       </li>
       <li class="nav-item">
         <a href="{% url 'predictions:upload_dataset' %}" class="nav-link" data-i18n="nav.predictions">Predictions</a>
       </li>
       <li class="nav-item">
         <a href="{% url 'home:user_chatbot' %}" class="nav-link" data-i18n="nav.chatbot">Chatbot</a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'home:trends' %}" class="nav-link" data-i18n="nav.trends">Trends</a>
       </li>
       {% if user.is_admin_user %}
       <li class="nav-item">

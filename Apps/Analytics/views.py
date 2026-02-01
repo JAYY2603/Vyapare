@@ -220,3 +220,15 @@ def upload_dataset(request):
         "required_columns": EXPECTED_COLUMNS,
     }
     return render(request, "analytics/upload_dataset.html", context)
+
+
+@login_required
+def generated_analytics(request, dataset_name):
+    context = {
+        "dataset_name": dataset_name,
+    }
+    return render(
+        request,
+        "analytics/generated_analytics/generated_analytics.html",
+        context,
+    )

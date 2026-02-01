@@ -1,5 +1,27 @@
-{% extends 'home/base.html' %} {% block title %}Analytics Upload - Vyapare{%
-endblock %} {% block content %}
+{% extends 'home/base.html' %} {% block title %}Analytics Upload - Vyapare{% endblock %} {% block extra_css %}
+<style>
+  .analytics-generate-wrap {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #d8e3d8;
+  }
+
+  .analytics-generate-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 6px;
+    background: #2f8f2f;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .analytics-generate-btn:hover {
+    background: #267526;
+    color: #fff;
+  }
+</style>
+{% endblock %} {% block content %}
 <section class="analytics-upload-page">
   <div class="analytics-upload-container">
     <header class="analytics-upload-header">
@@ -8,28 +30,12 @@ endblock %} {% block content %}
     </header>
 
     <div class="analytics-upload-card">
-      <form
-        method="post"
-        enctype="multipart/form-data"
-        class="analytics-upload-form"
-      >
+      <form method="post" enctype="multipart/form-data" class="analytics-upload-form">
         {% csrf_token %}
-        <label for="datasetFile" class="analytics-upload-label"
-          >Excel File</label
-        >
-        <input
-          id="datasetFile"
-          type="file"
-          name="dataset_file"
-          accept=".xlsx,.xlsm,.xltx,.xltm"
-          required
-        />
-        <p class="analytics-helper-text">
-          Allowed: Excel only, maximum file size is 10MB.
-        </p>
-        <button type="submit" class="btn btn-primary">
-          Upload and Validate
-        </button>
+        <label for="datasetFile" class="analytics-upload-label">Excel File</label>
+        <input id="datasetFile" type="file" name="dataset_file" accept=".xlsx,.xlsm,.xltx,.xltm" required />
+        <p class="analytics-helper-text">Allowed: Excel only, maximum file size is 10MB.</p>
+        <button type="submit" class="btn btn-primary">Upload and Validate</button>
       </form>
     </div>
 
@@ -46,18 +52,12 @@ endblock %} {% block content %}
     <div class="analytics-validation-card">
       <h2>Validation Results</h2>
       {% if uploaded_file_name %}
-      <p class="analytics-file-label">
-        Uploaded file: <strong>{{ uploaded_file_name }}</strong>
-      </p>
+      <p class="analytics-file-label">Uploaded file: <strong>{{ uploaded_file_name }}</strong></p>
       {% endif %}
       <ul class="analytics-validation-list">
         {% for result in validation_results %}
-        <li
-          class="validation-item {% if result.is_valid %}valid{% else %}invalid{% endif %}"
-        >
-          <span class="validation-marker"
-            >{% if result.is_valid %}PASS{% else %}FAIL{% endif %}</span
-          >
+        <li class="validation-item {% if result.is_valid %}valid{% else %}invalid{% endif %}">
+          <span class="validation-marker">{% if result.is_valid %}PASS{% else %}FAIL{% endif %}</span>
           <div>
             <p class="validation-title">{{ result.title }}</p>
             <p class="validation-message">{{ result.message }}</p>
@@ -67,9 +67,10 @@ endblock %} {% block content %}
       </ul>
 
       {% if upload_success %}
-      <p class="analytics-upload-success">
-        Dataset uploaded successfully. All validations passed.
-      </p>
+      <p class="analytics-upload-success">Dataset uploaded successfully. All validations passed.</p>
+      <div class="analytics-generate-wrap">
+        <a href="{% url 'analytics:generated_analytics' uploaded_file_name %}" class="analytics-generate-btn">Generate Analytics</a>
+      </div>
       {% endif %}
     </div>
     {% endif %}

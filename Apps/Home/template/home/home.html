@@ -1,5 +1,11 @@
-{% extends 'home/base.html' %} {% load static %} {% block title %}Vyapare -
-Home{% endblock %} {% block content %}
+{% extends 'home/base.html' %} {% load static %} {% block title %}Vyapare - Home{% endblock %} {% block extra_css %}
+<style>
+  html,
+  body {
+    overflow: hidden;
+  }
+</style>
+{% endblock %} {% block content %}
 <section class="hero">
   <video class="hero-video" autoplay muted playsinline>
     <source src="{% static 'videos/homevideo1.mp4' %}" type="video/mp4" />
@@ -8,22 +14,20 @@ Home{% endblock %} {% block content %}
   <div class="hero-container">
     <div class="hero-content">
       <h1>
-        <span id="heroLine1">Is your business really scaling?</span><br />
+        <span id="heroLine1" data-i18n="home.hero.line1.1">Is your business really scaling?</span><br />
         <span class="hero-highlight">
-          <span id="heroLine2Prefix">Get</span>
-          <span id="heroLine2Highlight">Actionable Insights</span>
+          <span id="heroLine2Prefix" data-i18n="home.hero.line2.prefix.1">Get</span>
+          <span id="heroLine2Highlight" data-i18n="home.hero.line2.highlight.1">Actionable Insights</span>
         </span>
       </h1>
 
       {% if not user.is_authenticated %}
       <div class="hero-buttons">
-        <a href="{% url 'home:login' %}" class="btn btn-primary">Get Started</a>
+        <a href="{% url 'home:login' %}" class="btn btn-primary" data-i18n="home.button.getStarted">Get Started</a>
       </div>
       {% else %}
       <div class="hero-buttons">
-        <a href="{% url 'dataset:dataset_list' %}" class="btn btn-primary"
-          >View Datasets</a
-        >
+        <a href="{% url 'dataset:dataset_list' %}" class="btn btn-primary" data-i18n="home.button.viewDatasets">View Datasets</a>
       </div>
       {% endif %}
     </div>
@@ -36,39 +40,37 @@ Home{% endblock %} {% block content %}
   const heroLine1 = document.getElementById("heroLine1");
   const heroLine2Prefix = document.getElementById("heroLine2Prefix");
   const heroLine2Highlight = document.getElementById("heroLine2Highlight");
-  const heroVideos = [
-    "{% static 'videos/homevideo1.mp4' %}",
-    "{% static 'videos/homevideo2.mp4' %}",
-    "{% static 'videos/homevideo3.mp4' %}",
-  ];
-  const heroMessages = [
+  const heroVideos = ["{% static 'videos/homevideo1.mp4' %}", "{% static 'videos/homevideo2.mp4' %}", "{% static 'videos/homevideo3.mp4' %}"];
+  const heroMessageKeys = [
     {
-      line1: "Is your business really scaling?",
-      line2Prefix: "Get",
-      line2Highlight: "Actionable Insights",
+      line1: "home.hero.line1.1",
+      line2Prefix: "home.hero.line2.prefix.1",
+      line2Highlight: "home.hero.line2.highlight.1",
     },
     {
-      line1: "Sales slipping through the cracks?",
-      line2Prefix: "Track",
-      line2Highlight: "Every Transaction",
+      line1: "home.hero.line1.2",
+      line2Prefix: "home.hero.line2.prefix.2",
+      line2Highlight: "home.hero.line2.highlight.2",
     },
     {
-      line1: "Ready to plan your next move?",
-      line2Prefix: "Predict",
-      line2Highlight: "Future Growth",
+      line1: "home.hero.line1.3",
+      line2Prefix: "home.hero.line2.prefix.3",
+      line2Highlight: "home.hero.line2.highlight.3",
     },
   ];
   let currentHeroVideoIndex = 0;
 
   const updateHeroMessage = (index) => {
-    const message = heroMessages[index];
-    if (!message || !heroLine1 || !heroLine2Prefix || !heroLine2Highlight) {
+    const messageKeys = heroMessageKeys[index];
+    if (!messageKeys || !heroLine1 || !heroLine2Prefix || !heroLine2Highlight) {
       return;
     }
 
-    heroLine1.textContent = message.line1;
-    heroLine2Prefix.textContent = message.line2Prefix;
-    heroLine2Highlight.textContent = message.line2Highlight;
+    const dictionary = window.translations?.[localStorage.getItem("vyapareLanguage") || "en"] || window.translations?.en || {};
+
+    heroLine1.textContent = dictionary[messageKeys.line1] || messageKeys.line1;
+    heroLine2Prefix.textContent = dictionary[messageKeys.line2Prefix] || messageKeys.line2Prefix;
+    heroLine2Highlight.textContent = dictionary[messageKeys.line2Highlight] || messageKeys.line2Highlight;
   };
 
   if (heroVideo && heroVideoSource) {
