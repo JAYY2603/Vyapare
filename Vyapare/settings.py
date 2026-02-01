@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'Apps.Home.apps.HomeConfig',
     'Apps.Dataset.apps.DatasetConfig',
+    'Apps.Analytics.apps.AnalyticsConfig',
+    'Apps.Predictions.apps.PredictionsConfig',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +63,8 @@ TEMPLATES = [
         'DIRS': [
             BASE_DIR / 'Apps' / 'Home' / 'template',
             BASE_DIR / 'Apps' / 'Dataset' / 'template',
+            BASE_DIR / 'Apps' / 'Analytics' / 'template',
+            BASE_DIR / 'Apps' / 'Predictions' / 'template',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

@@ -27,6 +27,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('Apps.Home.urls')),
     path('', include('Apps.Dataset.urls')),
+    path('', include('Apps.Analytics.urls')),
+    path('', include('Apps.Predictions.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema')),
 ]

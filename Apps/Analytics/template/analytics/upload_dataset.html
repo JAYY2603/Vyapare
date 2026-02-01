@@ -1,0 +1,53 @@
+{% extends 'home/base.html' %} {% block title %}Analytics Upload - Vyapare{% endblock %} {% block content %}
+<section class="analytics-upload-page">
+  <div class="analytics-upload-container">
+    <header class="analytics-upload-header">
+      <h1>Upload Dataset for Analytics</h1>
+      <p>Upload an Excel file and validate it before analytics processing.</p>
+    </header>
+
+    <div class="analytics-upload-card">
+      <form method="post" enctype="multipart/form-data" class="analytics-upload-form">
+        {% csrf_token %}
+        <label for="datasetFile" class="analytics-upload-label">Excel File</label>
+        <input id="datasetFile" type="file" name="dataset_file" accept=".xlsx,.xlsm,.xltx,.xltm" required />
+        <p class="analytics-helper-text">Allowed: Excel only, maximum file size is 10MB.</p>
+        <button type="submit" class="btn btn-primary">Upload and Validate</button>
+      </form>
+    </div>
+
+    <div class="analytics-rules-card">
+      <h2>Required Columns</h2>
+      <ul class="analytics-columns-list">
+        {% for column in required_columns %}
+        <li>{{ column }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if validation_results %}
+    <div class="analytics-validation-card">
+      <h2>Validation Results</h2>
+      {% if uploaded_file_name %}
+      <p class="analytics-file-label">Uploaded file: <strong>{{ uploaded_file_name }}</strong></p>
+      {% endif %}
+      <ul class="analytics-validation-list">
+        {% for result in validation_results %}
+        <li class="validation-item {% if result.is_valid %}valid{% else %}invalid{% endif %}">
+          <span class="validation-marker">{% if result.is_valid %}PASS{% else %}FAIL{% endif %}</span>
+          <div>
+            <p class="validation-title">{{ result.title }}</p>
+            <p class="validation-message">{{ result.message }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if upload_success %}
+      <p class="analytics-upload-success">Dataset uploaded successfully. All validations passed.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

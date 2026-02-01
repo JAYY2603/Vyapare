@@ -1205,6 +1205,121 @@ body.modal-open {
   overflow: hidden;
 }
 
+/* ===== ANALYTICS UPLOAD PAGE ===== */
+.analytics-upload-page {
+  background: #f2f2f4;
+  min-height: calc(100vh - 80px);
+  padding: 30px 20px 48px;
+}
+
+.analytics-upload-container {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.analytics-upload-header h1 {
+  color: #4da936;
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+}
+
+.analytics-upload-header p {
+  color: #5f6368;
+}
+
+.analytics-upload-card,
+.analytics-rules-card,
+.analytics-validation-card {
+  background: #ffffff;
+  border: 1px solid #d8d8d8;
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.analytics-upload-form {
+  display: grid;
+  gap: 10px;
+}
+
+.analytics-upload-label {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.analytics-helper-text,
+.analytics-file-label {
+  color: #5f6368;
+  font-size: 0.95rem;
+}
+
+.analytics-columns-list {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  color: #3f444d;
+}
+
+.analytics-validation-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.validation-item {
+  border: 1px solid #d7dde7;
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.validation-item.valid {
+  border-left: 5px solid #22c55e;
+  background: #f0fdf4;
+}
+
+.validation-item.invalid {
+  border-left: 5px solid #ef4444;
+  background: #fef2f2;
+}
+
+.validation-marker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 999px;
+  color: #ffffff;
+  padding: 4px 8px;
+  line-height: 1.4;
+}
+
+.validation-item.valid .validation-marker {
+  background: #16a34a;
+}
+
+.validation-item.invalid .validation-marker {
+  background: #dc2626;
+}
+
+.validation-title {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.validation-message {
+  color: #4b5563;
+  margin-top: 2px;
+}
+
+.analytics-upload-success {
+  margin-top: 12px;
+  color: #15803d;
+  font-weight: 700;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .hamburger {
@@ -1416,6 +1531,14 @@ body.modal-open {
 
   .view-inventory-modal {
     max-width: 100%;
+  }
+
+  .analytics-upload-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .validation-item {
+    grid-template-columns: 1fr;
   }
 }
 
