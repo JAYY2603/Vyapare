@@ -96,6 +96,10 @@
     background: linear-gradient(180deg, #2f8f2f 0%, #64b85a 100%);
   }
 
+  .metric-grid > .metric-card:nth-child(3n + 2)::before {
+    background: linear-gradient(180deg, #1d4ed8 0%, #3b82f6 100%);
+  }
+
   .metric-card:hover {
     transform: translateY(-4px);
     border-color: #64b85a;
@@ -324,6 +328,58 @@
     text-align: center;
   }
 
+  .revenue-trend-chart-wrap {
+    border: 1px solid #d5ead5;
+    border-radius: 12px;
+    padding: 14px;
+    background: linear-gradient(180deg, #fcfffc 0%, #f2faf2 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 14px;
+    min-height: 330px;
+  }
+
+  .revenue-trend-canvas-wrap {
+    border: 1px solid #e0ece0;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    min-height: 280px;
+  }
+
+  #revenueTrendBar {
+    width: 100%;
+    height: 280px;
+    display: block;
+  }
+
+  .revenue-trend-values {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 300px;
+    padding-right: 2px;
+  }
+
+  .revenue-trend-value-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #deebde;
+    border-radius: 8px;
+    padding: 7px 9px;
+    font-size: 12.5px;
+    color: #253243;
+    background: #ffffff;
+  }
+
+  .revenue-trend-value-amount {
+    font-weight: 700;
+    color: #1f4f1f;
+  }
+
   @media (max-width: 900px) {
     body.generated-grid-mode {
       overflow: auto;
@@ -364,6 +420,11 @@
     }
 
     .payment-method-chart-wrap {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    .revenue-trend-chart-wrap {
       grid-template-columns: 1fr;
       min-height: 0;
     }
@@ -422,9 +483,9 @@
           <h3 data-i18n="analytics.generated.priceBandAnalysis.title">Price Band Analysis</h3>
           <p data-i18n="analytics.generated.priceBandAnalysis.desc">Performance by price range</p>
         </button>
-        <button class="metric-card" type="button" data-analytics-type="inventory_risk">
-          <h3 data-i18n="analytics.generated.inventoryRisk.title">Inventory Risk</h3>
-          <p data-i18n="analytics.generated.inventoryRisk.desc">Low stock and risk flags</p>
+        <button class="metric-card" type="button" data-analytics-type="revenue_split_by_payment_method">
+          <h3 data-i18n="analytics.generated.revenueSplitByPaymentMethod.title">Revenue Split by Payment Method</h3>
+          <p data-i18n="analytics.generated.revenueSplitByPaymentMethod.desc">Revenue share by Cash, Card, QR and Credit</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="day_wise_pattern">
           <h3 data-i18n="analytics.generated.dayWisePattern.title">Day-wise Pattern</h3>
@@ -521,11 +582,71 @@
       ctx.fill();
     }
 
-    function buildLegendHtml(splitData) {
+    function drawBarChart(canvas, points) {
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const margin = { top: 20, right: 20, bottom: 48, left: 52 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const values = points.map(function (point) {
+        return Number(point.revenue || 0);
+      });
+      const maxValue = Math.max.apply(null, values.concat([1]));
+
+      ctx.strokeStyle = "#94a3b8";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(margin.left, margin.top);
+      ctx.lineTo(margin.left, margin.top + innerHeight);
+      ctx.lineTo(margin.left + innerWidth, margin.top + innerHeight);
+      ctx.stroke();
+
+      const step = innerWidth / Math.max(points.length, 1);
+      const barWidth = Math.max(6, step * 0.64);
+      const skipFactor = Math.max(1, Math.ceil(points.length / 12));
+
+      points.forEach(function (point, index) {
+        const value = Number(point.revenue || 0);
+        const x = margin.left + index * step + (step - barWidth) / 2;
+        const barHeight = (value / maxValue) * innerHeight;
+        const y = margin.top + innerHeight - barHeight;
+
+        ctx.fillStyle = "#2563eb";
+        ctx.fillRect(x, y, barWidth, barHeight);
+
+        if (index % skipFactor === 0) {
+          ctx.fillStyle = "#475569";
+          ctx.font = "11px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(String(point.label), x + barWidth / 2, margin.top + innerHeight + 16);
+        }
+      });
+
+      ctx.fillStyle = "#334155";
+      ctx.font = "11px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("0", margin.left - 6, margin.top + innerHeight + 3);
+      ctx.fillText("Rs. " + maxValue.toFixed(2), margin.left - 6, margin.top + 3);
+    }
+
+    function buildCountLegendHtml(splitData) {
       return splitData
         .map(function (item, index) {
           const color = piePalette[index % piePalette.length];
           return '<div class="payment-method-legend-item">' + '<span class="legend-color-dot" style="background:' + color + '"></span>' + "<span>" + escapeHtml(item.payment_method) + "</span>" + '<span class="legend-value">' + item.count + " (" + item.percentage.toFixed(2) + "%)</span>" + "</div>";
+        })
+        .join("");
+    }
+
+    function buildRevenueLegendHtml(splitData) {
+      return splitData
+        .map(function (item, index) {
+          const color = piePalette[index % piePalette.length];
+          return '<div class="payment-method-legend-item">' + '<span class="legend-color-dot" style="background:' + color + '"></span>' + "<span>" + escapeHtml(item.payment_method) + "</span>" + '<span class="legend-value">Rs. ' + Number(item.revenue || 0).toFixed(2) + " (" + Number(item.percentage || 0).toFixed(2) + "%)</span>" + "</div>";
         })
         .join("");
     }
@@ -546,7 +667,59 @@
       const canvas = document.getElementById("paymentMethodPie");
       const legend = document.getElementById("paymentMethodLegend");
       drawPieChart(canvas, data.split);
-      legend.innerHTML = buildLegendHtml(data.split);
+      legend.innerHTML = buildCountLegendHtml(data.split);
+    }
+
+    function renderRevenueChartState(data) {
+      const chartStateContainer = document.getElementById("revenueSplitChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!data.split || !data.split.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.noRecords", "No revenue records found for the selected filter.")) + "</div>";
+        return;
+      }
+
+      chartStateContainer.innerHTML =
+        '<div class="payment-method-chart-wrap">' + '  <div class="payment-method-canvas-wrap"><canvas id="revenueSplitPie" width="320" height="320" aria-label="Revenue Split by Payment Method Pie Chart"></canvas></div>' + '  <div class="payment-method-legend" id="revenueSplitLegend"></div>' + "</div>" + '<p class="chart-summary">' + getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.totalRevenue", "Total revenue") + ": Rs. " + Number(data.total_revenue || 0).toFixed(2) + "</p>";
+
+      const canvas = document.getElementById("revenueSplitPie");
+      const legend = document.getElementById("revenueSplitLegend");
+      drawPieChart(canvas, data.split);
+      legend.innerHTML = buildRevenueLegendHtml(data.split);
+    }
+
+    function buildRevenueTrendValuesHtml(points) {
+      return points
+        .filter(function (point) {
+          return Number(point.revenue || 0) > 0;
+        })
+        .map(function (point) {
+          return '<div class="revenue-trend-value-item"><span>' + escapeHtml(point.label) + '</span><span class="revenue-trend-value-amount">Rs. ' + Number(point.revenue || 0).toFixed(2) + "</span></div>";
+        })
+        .join("");
+    }
+
+    function renderRevenueTrendChartState(data) {
+      const chartStateContainer = document.getElementById("revenueTrendChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!data.points || !data.points.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueTrend.noRecords", "No revenue records found for the selected filter.")) + "</div>";
+        return;
+      }
+
+      chartStateContainer.innerHTML = '<div class="revenue-trend-chart-wrap">' + '  <div class="revenue-trend-canvas-wrap"><canvas id="revenueTrendBar" width="820" height="300" aria-label="Revenue Trend Bar Chart"></canvas></div>' + '  <div class="revenue-trend-values" id="revenueTrendValues"></div>' + "</div>" + '<p class="chart-summary">' + getTranslatedText("analytics.generated.revenueTrend.totalRevenue", "Total revenue") + ": Rs. " + Number(data.total_revenue || 0).toFixed(2) + "</p>";
+
+      const canvas = document.getElementById("revenueTrendBar");
+      const valuesWrap = document.getElementById("revenueTrendValues");
+      drawBarChart(canvas, data.points);
+
+      const valuesHtml = buildRevenueTrendValuesHtml(data.points);
+      valuesWrap.innerHTML = valuesHtml || '<div class="analytics-inline-message" style="min-height:140px;">' + escapeHtml(getTranslatedText("analytics.generated.revenueTrend.noRecords", "No revenue records found for the selected filter.")) + "</div>";
     }
 
     async function fetchJson(url) {
@@ -679,6 +852,234 @@
       }
     }
 
+    async function fetchAndRenderRevenueTrend(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("revenueTrendChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueTrend.selectYearPrompt", "Select Year to generate revenue trend.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue });
+      if (monthValue) {
+        query.append("month", monthValue);
+      }
+
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueTrend.loading", "Loading Revenue Trend...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/revenue-trend/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderRevenueTrendChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.revenueTrend.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderRevenueTrendPanel() {
+      const monthOptions = [
+        {
+          value: "",
+          label: getTranslatedText("analytics.generated.paymentMethodSplit.months.all", "All Months"),
+        },
+        { value: "1", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jan", "Jan") },
+        { value: "2", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.feb", "Feb") },
+        { value: "3", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.mar", "Mar") },
+        { value: "4", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.apr", "Apr") },
+        { value: "5", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.may", "May") },
+        { value: "6", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jun", "Jun") },
+        { value: "7", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jul", "Jul") },
+        { value: "8", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.aug", "Aug") },
+        { value: "9", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.sep", "Sep") },
+        { value: "10", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.oct", "Oct") },
+        { value: "11", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.nov", "Nov") },
+        { value: "12", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.dec", "Dec") },
+      ];
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="revenueTrendYearSelect">' +
+        getTranslatedText("analytics.generated.revenueTrend.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="revenueTrendYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.revenueTrend.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="revenueTrendMonthSelect">' +
+        getTranslatedText("analytics.generated.revenueTrend.monthLabel", "Month (Optional)") +
+        "</label>" +
+        '    <select id="revenueTrendMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.revenueTrend.note", "Year is mandatory. Month filter is optional.") +
+        "</p>" +
+        '<div id="revenueTrendChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.revenueTrend.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("revenueTrendYearSelect");
+      const monthSelect = document.getElementById("revenueTrendMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/revenue-trend/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.revenueTrend.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.revenueTrend.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        await fetchAndRenderRevenueTrend(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderRevenueTrend(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderRevenueTrend(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.revenueTrend.fetchYearsError", "Unable to fetch year filters."));
+      }
+    }
+
+    async function fetchAndRenderRevenueSplit(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("revenueSplitChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.selectYearPrompt", "Select Year to generate revenue split.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue });
+      if (monthValue) {
+        query.append("month", monthValue);
+      }
+
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.loading", "Loading Revenue Split by Payment Method...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/revenue-split-by-payment-method/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderRevenueChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderRevenueSplitPanel() {
+      const monthOptions = [
+        {
+          value: "",
+          label: getTranslatedText("analytics.generated.paymentMethodSplit.months.all", "All Months"),
+        },
+        { value: "1", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jan", "Jan") },
+        { value: "2", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.feb", "Feb") },
+        { value: "3", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.mar", "Mar") },
+        { value: "4", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.apr", "Apr") },
+        { value: "5", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.may", "May") },
+        { value: "6", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jun", "Jun") },
+        { value: "7", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jul", "Jul") },
+        { value: "8", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.aug", "Aug") },
+        { value: "9", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.sep", "Sep") },
+        { value: "10", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.oct", "Oct") },
+        { value: "11", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.nov", "Nov") },
+        { value: "12", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.dec", "Dec") },
+      ];
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="revenueYearSelect">' +
+        getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="revenueYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="revenueMonthSelect">' +
+        getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.monthLabel", "Month (Optional)") +
+        "</label>" +
+        '    <select id="revenueMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.note", "Year is mandatory. Month filter is optional.") +
+        "</p>" +
+        '<div id="revenueSplitChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("revenueYearSelect");
+      const monthSelect = document.getElementById("revenueMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/revenue-split-by-payment-method/" + encodeURIComponent(datasetKey) + "/years/");
+
+        const years = yearsPayload.years || [];
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        await fetchAndRenderRevenueSplit(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderRevenueSplit(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderRevenueSplit(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.revenueSplitByPaymentMethod.fetchYearsError", "Unable to fetch year filters."));
+      }
+    }
+
     function closeDetail() {
       cards.forEach(function (other) {
         other.classList.remove("active", "hidden");
@@ -717,8 +1118,12 @@
         setDetailMode();
 
         const analyticsType = card.dataset.analyticsType;
-        if (analyticsType === "payment_method_split") {
+        if (analyticsType === "revenue_trend") {
+          renderRevenueTrendPanel();
+        } else if (analyticsType === "payment_method_split") {
           renderPaymentMethodSplitPanel();
+        } else if (analyticsType === "revenue_split_by_payment_method") {
+          renderRevenueSplitPanel();
         } else {
           renderInlineMessage(getTranslatedText("analytics.generated.placeholderNotIntegrated", "This analytics card UI is ready. API integration will be added next."));
         }
