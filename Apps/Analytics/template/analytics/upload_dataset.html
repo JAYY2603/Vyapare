@@ -86,7 +86,7 @@
       {% if upload_success %}
       <p class="analytics-upload-success" data-i18n="analytics.upload.success">Dataset uploaded successfully. All validations passed.</p>
       <div class="analytics-generate-wrap">
-        <a href="{% url 'analytics:generated_analytics' uploaded_file_name %}" class="analytics-generate-btn" data-i18n="analytics.upload.generateAnalytics">Generate Analytics</a>
+        <a href="{% url 'analytics:generated_analytics' generated_dataset_key %}?label={{ uploaded_file_name|urlencode }}" class="analytics-generate-btn" data-i18n="analytics.upload.generateAnalytics">Generate Analytics</a>
       </div>
       {% endif %}
     </div>

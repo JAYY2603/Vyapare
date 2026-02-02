@@ -153,7 +153,7 @@ def _save_uploaded_file(uploaded_file, user_id):
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
 
-    return str(target_path)
+    return str(target_path), saved_name
 
 
 @login_required
@@ -161,6 +161,7 @@ def upload_dataset(request):
     validation_results = []
     upload_success = False
     uploaded_file_name = None
+    generated_dataset_key = None
 
     if request.method == "POST":
         uploaded_file = request.FILES.get("dataset_file")
@@ -210,22 +211,28 @@ def upload_dataset(request):
             )
 
             if is_type_valid and is_size_valid and is_schema_valid:
-                _save_uploaded_file(uploaded_file, request.user.id)
+                _, generated_dataset_key = _save_uploaded_file(
+                    uploaded_file, request.user.id)
                 upload_success = True
 
     context = {
         "validation_results": validation_results,
         "upload_success": upload_success,
         "uploaded_file_name": uploaded_file_name,
+        "generated_dataset_key": generated_dataset_key,
         "required_columns": EXPECTED_COLUMNS,
     }
     return render(request, "analytics/upload_dataset.html", context)
 
 
 @login_required
-def generated_analytics(request, dataset_name):
+def generated_analytics(request, dataset_key=None, dataset_name=None):
+    resolved_dataset_key = dataset_key or dataset_name or ""
+    dataset_label = request.GET.get(
+        "label", "").strip() or resolved_dataset_key
     context = {
-        "dataset_name": dataset_name,
+        "dataset_name": dataset_label,
+        "dataset_key": resolved_dataset_key,
     }
     return render(
         request,
