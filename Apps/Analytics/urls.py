@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from .category_performance import views as category_performance_views
+from .market_basket_analysis import views as market_basket_views
 from .payment_method_split import views as payment_method_split_views
 from .revenue_split_by_payment_method import views as revenue_split_views
 from .revenue_trend import views as revenue_trend_views
@@ -54,5 +55,15 @@ urlpatterns = [
         "analytics/api/category-performance/<str:dataset_key>/chart/",
         category_performance_views.api_category_performance_chart,
         name="api_category_performance_chart",
+    ),
+    path(
+        "analytics/api/market-basket-analysis/<str:dataset_key>/years/",
+        market_basket_views.api_market_basket_years,
+        name="api_market_basket_years",
+    ),
+    path(
+        "analytics/api/market-basket-analysis/<str:dataset_key>/chart/",
+        market_basket_views.api_market_basket_chart,
+        name="api_market_basket_chart",
     ),
 ]

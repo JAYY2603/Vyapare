@@ -479,9 +479,9 @@
           <h3 data-i18n="analytics.generated.orderVolume.title">Order Volume</h3>
           <p data-i18n="analytics.generated.orderVolume.desc">Order count and density</p>
         </button>
-        <button class="metric-card" type="button" data-analytics-type="price_band_analysis">
-          <h3 data-i18n="analytics.generated.priceBandAnalysis.title">Price Band Analysis</h3>
-          <p data-i18n="analytics.generated.priceBandAnalysis.desc">Performance by price range</p>
+        <button class="metric-card" type="button" data-analytics-type="frequently_bought_together_items">
+          <h3 data-i18n="analytics.generated.frequentlyBoughtTogether.title">Frequently Bought Together Items</h3>
+          <p data-i18n="analytics.generated.frequentlyBoughtTogether.desc">Market Basket Analysis (MBA) combinations</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="revenue_split_by_payment_method">
           <h3 data-i18n="analytics.generated.revenueSplitByPaymentMethod.title">Revenue Split by Payment Method</h3>
@@ -582,18 +582,20 @@
       ctx.fill();
     }
 
-    function drawBarChart(canvas, points) {
+    function drawBarChart(canvas, points, config) {
       const ctx = canvas.getContext("2d");
       const width = canvas.width;
       const height = canvas.height;
       const margin = { top: 20, right: 20, bottom: 48, left: 52 };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
+      const valueKey = config?.valueKey || "revenue";
+      const yAxisPrefix = config?.yAxisPrefix || "";
 
       ctx.clearRect(0, 0, width, height);
 
       const values = points.map(function (point) {
-        return Number(point.revenue || 0);
+        return Number(point[valueKey] || 0);
       });
       const maxValue = Math.max.apply(null, values.concat([1]));
 
@@ -610,7 +612,7 @@
       const skipFactor = Math.max(1, Math.ceil(points.length / 12));
 
       points.forEach(function (point, index) {
-        const value = Number(point.revenue || 0);
+        const value = Number(point[valueKey] || 0);
         const x = margin.left + index * step + (step - barWidth) / 2;
         const barHeight = (value / maxValue) * innerHeight;
         const y = margin.top + innerHeight - barHeight;
@@ -630,7 +632,7 @@
       ctx.font = "11px sans-serif";
       ctx.textAlign = "right";
       ctx.fillText("0", margin.left - 6, margin.top + innerHeight + 3);
-      ctx.fillText("Rs. " + maxValue.toFixed(2), margin.left - 6, margin.top + 3);
+      ctx.fillText(yAxisPrefix + maxValue.toFixed(2), margin.left - 6, margin.top + 3);
     }
 
     function buildCountLegendHtml(splitData) {
@@ -745,10 +747,43 @@
 
       const canvas = document.getElementById("revenueTrendBar");
       const valuesWrap = document.getElementById("revenueTrendValues");
-      drawBarChart(canvas, data.points);
+      drawBarChart(canvas, data.points, { valueKey: "revenue", yAxisPrefix: "Rs. " });
 
       const valuesHtml = buildRevenueTrendValuesHtml(data.points);
       valuesWrap.innerHTML = valuesHtml || '<div class="analytics-inline-message" style="min-height:140px;">' + escapeHtml(getTranslatedText("analytics.generated.revenueTrend.noRecords", "No revenue records found for the selected filter.")) + "</div>";
+    }
+
+    function buildMarketBasketValuesHtml(points) {
+      return points
+        .filter(function (point) {
+          return Number(point.count || 0) > 0;
+        })
+        .map(function (point) {
+          return '<div class="revenue-trend-value-item"><span>' + escapeHtml(point.label) + '</span><span class="revenue-trend-value-amount">' + Number(point.count || 0) + "</span></div>";
+        })
+        .join("");
+    }
+
+    function renderMarketBasketChartState(data) {
+      const chartStateContainer = document.getElementById("marketBasketChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!data.points || !data.points.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.marketBasket.noRecords", "No frequent item pairs found for the selected year.")) + "</div>";
+        return;
+      }
+
+      chartStateContainer.innerHTML =
+        '<div class="revenue-trend-chart-wrap">' + '  <div class="revenue-trend-canvas-wrap"><canvas id="marketBasketBar" width="820" height="300" aria-label="Market Basket Analysis Bar Chart"></canvas></div>' + '  <div class="revenue-trend-values" id="marketBasketValues"></div>' + "</div>" + '<p class="chart-summary">' + getTranslatedText("analytics.generated.marketBasket.totalPairs", "Total pair occurrences") + ": " + Number(data.total_pair_occurrences || 0) + "</p>";
+
+      const canvas = document.getElementById("marketBasketBar");
+      const valuesWrap = document.getElementById("marketBasketValues");
+      drawBarChart(canvas, data.points, { valueKey: "count", yAxisPrefix: "" });
+
+      const valuesHtml = buildMarketBasketValuesHtml(data.points);
+      valuesWrap.innerHTML = valuesHtml || '<div class="analytics-inline-message" style="min-height:140px;">' + escapeHtml(getTranslatedText("analytics.generated.marketBasket.noRecords", "No frequent item pairs found for the selected year.")) + "</div>";
     }
 
     async function fetchJson(url) {
@@ -1223,6 +1258,81 @@
       }
     }
 
+    async function fetchAndRenderMarketBasket(yearValue) {
+      const chartStateContainer = document.getElementById("marketBasketChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.marketBasket.selectYearPrompt", "Select Year to generate market basket analysis.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue });
+
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.marketBasket.loading", "Loading Market Basket Analysis...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/market-basket-analysis/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderMarketBasketChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.marketBasket.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderMarketBasketPanel() {
+      panelBody.innerHTML =
+        '<div class="payment-method-controls" style="grid-template-columns: minmax(0, 220px);">' +
+        '  <div class="control-field">' +
+        '    <label for="marketBasketYearSelect">' +
+        getTranslatedText("analytics.generated.marketBasket.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="marketBasketYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.marketBasket.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.marketBasket.note", "Year is mandatory.") +
+        "</p>" +
+        '<div id="marketBasketChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.marketBasket.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("marketBasketYearSelect");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/market-basket-analysis/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.marketBasket.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.marketBasket.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        await fetchAndRenderMarketBasket(yearSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderMarketBasket(yearSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.marketBasket.fetchYearsError", "Unable to fetch year filters."));
+      }
+    }
+
     function closeDetail() {
       cards.forEach(function (other) {
         other.classList.remove("active", "hidden");
@@ -1265,6 +1375,8 @@
           renderRevenueTrendPanel();
         } else if (analyticsType === "category_performance") {
           renderCategoryPerformancePanel();
+        } else if (analyticsType === "frequently_bought_together_items") {
+          renderMarketBasketPanel();
         } else if (analyticsType === "payment_method_split") {
           renderPaymentMethodSplitPanel();
         } else if (analyticsType === "revenue_split_by_payment_method") {
