@@ -651,6 +651,15 @@
         .join("");
     }
 
+    function buildCategoryLegendHtml(splitData) {
+      return splitData
+        .map(function (item, index) {
+          const color = piePalette[index % piePalette.length];
+          return '<div class="payment-method-legend-item">' + '<span class="legend-color-dot" style="background:' + color + '"></span>' + "<span>" + escapeHtml(item.category) + "</span>" + '<span class="legend-value">' + Number(item.count || 0) + " (" + Number(item.percentage || 0).toFixed(2) + "%)</span>" + "</div>";
+        })
+        .join("");
+    }
+
     function renderChartState(data) {
       const chartStateContainer = document.getElementById("paymentMethodChartState");
       if (!chartStateContainer) {
@@ -688,6 +697,26 @@
       const legend = document.getElementById("revenueSplitLegend");
       drawPieChart(canvas, data.split);
       legend.innerHTML = buildRevenueLegendHtml(data.split);
+    }
+
+    function renderCategoryPerformanceChartState(data) {
+      const chartStateContainer = document.getElementById("categoryPerformanceChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!data.split || !data.split.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.categoryPerformance.noRecords", "No category records found for the selected filter.")) + "</div>";
+        return;
+      }
+
+      chartStateContainer.innerHTML =
+        '<div class="payment-method-chart-wrap">' + '  <div class="payment-method-canvas-wrap"><canvas id="categoryPerformancePie" width="320" height="320" aria-label="Category Performance Pie Chart"></canvas></div>' + '  <div class="payment-method-legend" id="categoryPerformanceLegend"></div>' + "</div>" + '<p class="chart-summary">' + getTranslatedText("analytics.generated.categoryPerformance.totalRecords", "Total records") + ": " + Number(data.total_records || 0) + "</p>";
+
+      const canvas = document.getElementById("categoryPerformancePie");
+      const legend = document.getElementById("categoryPerformanceLegend");
+      drawPieChart(canvas, data.split);
+      legend.innerHTML = buildCategoryLegendHtml(data.split);
     }
 
     function buildRevenueTrendValuesHtml(points) {
@@ -1080,6 +1109,120 @@
       }
     }
 
+    async function fetchAndRenderCategoryPerformance(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("categoryPerformanceChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.categoryPerformance.selectYearPrompt", "Select Year to generate category performance.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue });
+      if (monthValue) {
+        query.append("month", monthValue);
+      }
+
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.categoryPerformance.loading", "Loading Category Performance...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/category-performance/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderCategoryPerformanceChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.categoryPerformance.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderCategoryPerformancePanel() {
+      const monthOptions = [
+        {
+          value: "",
+          label: getTranslatedText("analytics.generated.paymentMethodSplit.months.all", "All Months"),
+        },
+        { value: "1", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jan", "Jan") },
+        { value: "2", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.feb", "Feb") },
+        { value: "3", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.mar", "Mar") },
+        { value: "4", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.apr", "Apr") },
+        { value: "5", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.may", "May") },
+        { value: "6", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jun", "Jun") },
+        { value: "7", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jul", "Jul") },
+        { value: "8", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.aug", "Aug") },
+        { value: "9", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.sep", "Sep") },
+        { value: "10", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.oct", "Oct") },
+        { value: "11", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.nov", "Nov") },
+        { value: "12", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.dec", "Dec") },
+      ];
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="categoryYearSelect">' +
+        getTranslatedText("analytics.generated.categoryPerformance.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="categoryYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.categoryPerformance.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="categoryMonthSelect">' +
+        getTranslatedText("analytics.generated.categoryPerformance.monthLabel", "Month (Optional)") +
+        "</label>" +
+        '    <select id="categoryMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.categoryPerformance.note", "Year is mandatory. Month filter is optional.") +
+        "</p>" +
+        '<div id="categoryPerformanceChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.categoryPerformance.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("categoryYearSelect");
+      const monthSelect = document.getElementById("categoryMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/category-performance/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.categoryPerformance.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.categoryPerformance.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        await fetchAndRenderCategoryPerformance(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderCategoryPerformance(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderCategoryPerformance(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.categoryPerformance.fetchYearsError", "Unable to fetch year filters."));
+      }
+    }
+
     function closeDetail() {
       cards.forEach(function (other) {
         other.classList.remove("active", "hidden");
@@ -1120,6 +1263,8 @@
         const analyticsType = card.dataset.analyticsType;
         if (analyticsType === "revenue_trend") {
           renderRevenueTrendPanel();
+        } else if (analyticsType === "category_performance") {
+          renderCategoryPerformancePanel();
         } else if (analyticsType === "payment_method_split") {
           renderPaymentMethodSplitPanel();
         } else if (analyticsType === "revenue_split_by_payment_method") {
