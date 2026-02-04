@@ -392,6 +392,97 @@
     color: #1f4f1f;
   }
 
+  .order-volume-wrap {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .order-volume-month-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .order-volume-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .order-volume-weekday {
+    text-align: center;
+    font-size: 11px;
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .order-volume-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .order-volume-empty-cell {
+    height: 48px;
+    border-radius: 4px;
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+  }
+
+  .order-volume-cell {
+    min-height: 48px;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2px;
+  }
+
+  .order-volume-day {
+    font-size: 11px;
+    color: #1f2937;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .order-volume-count {
+    font-size: 11px;
+    color: #0f172a;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .order-volume-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #4b5563;
+  }
+
+  .order-volume-legend-chip {
+    width: 16px;
+    height: 10px;
+    border: 1px solid #9ca3af;
+    border-radius: 2px;
+  }
+
+  .order-volume-legend-chip.is-low {
+    background: #b91c1c;
+  }
+
+  .order-volume-legend-chip.is-high {
+    background: #166534;
+  }
+
   @media (max-width: 900px) {
     body.generated-grid-mode {
       overflow: auto;
@@ -443,6 +534,12 @@
 
     .payment-method-canvas-wrap {
       min-height: 220px;
+    }
+
+    .order-volume-empty-cell,
+    .order-volume-cell {
+      min-height: 44px;
+      height: 44px;
     }
   }
 
@@ -828,6 +925,249 @@
 
       const valuesHtml = buildTopSellingValuesHtml(data.points);
       valuesWrap.innerHTML = valuesHtml || '<div class="analytics-inline-message" style="min-height:140px;">' + escapeHtml(getTranslatedText("analytics.generated.topSellingItems.noRecords", "No item records found for the selected filter.")) + "</div>";
+    }
+
+    function getOrderVolumeMonthOptions() {
+      return [
+        { value: "", label: getTranslatedText("analytics.generated.orderVolume.selectMonth", "Select Month") },
+        { value: "1", label: getTranslatedText("analytics.generated.orderVolume.months.1", "Jan") },
+        { value: "2", label: getTranslatedText("analytics.generated.orderVolume.months.2", "Feb") },
+        { value: "3", label: getTranslatedText("analytics.generated.orderVolume.months.3", "Mar") },
+        { value: "4", label: getTranslatedText("analytics.generated.orderVolume.months.4", "Apr") },
+        { value: "5", label: getTranslatedText("analytics.generated.orderVolume.months.5", "May") },
+        { value: "6", label: getTranslatedText("analytics.generated.orderVolume.months.6", "Jun") },
+        { value: "7", label: getTranslatedText("analytics.generated.orderVolume.months.7", "Jul") },
+        { value: "8", label: getTranslatedText("analytics.generated.orderVolume.months.8", "Aug") },
+        { value: "9", label: getTranslatedText("analytics.generated.orderVolume.months.9", "Sep") },
+        { value: "10", label: getTranslatedText("analytics.generated.orderVolume.months.10", "Oct") },
+        { value: "11", label: getTranslatedText("analytics.generated.orderVolume.months.11", "Nov") },
+        { value: "12", label: getTranslatedText("analytics.generated.orderVolume.months.12", "Dec") },
+      ];
+    }
+
+    function getOrderVolumeWeekdayLabels() {
+      return [
+        getTranslatedText("analytics.generated.orderVolume.weekdays.sun", "Sun"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.mon", "Mon"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.tue", "Tue"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.wed", "Wed"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.thu", "Thu"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.fri", "Fri"),
+        getTranslatedText("analytics.generated.orderVolume.weekdays.sat", "Sat"),
+      ];
+    }
+
+    function getOrderVolumeCellColor(count, maxCount) {
+      if (maxCount <= 0) {
+        return "#fef2f2";
+      }
+
+      if (count <= 0) {
+        return "#fee2e2";
+      }
+
+      const ratio = count / maxCount;
+      if (ratio <= 0.2) {
+        return "#fca5a5";
+      }
+      if (ratio <= 0.4) {
+        return "#ef4444";
+      }
+      if (ratio <= 0.6) {
+        return "#86efac";
+      }
+      if (ratio <= 0.8) {
+        return "#22c55e";
+      }
+      return "#15803d";
+    }
+
+    function getOrderVolumeTextColor(count, maxCount) {
+      if (maxCount <= 0 || count <= 0) {
+        return "#1f2937";
+      }
+
+      const ratio = count / maxCount;
+      if (ratio > 0.8) {
+        return "#ffffff";
+      }
+      if (ratio > 0.4) {
+        return "#052e16";
+      }
+      return "#1f2937";
+    }
+
+    function renderOrderVolumeChartState(data) {
+      const chartStateContainer = document.getElementById("orderVolumeChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      const points = Array.isArray(data.points) ? data.points : [];
+      if (!points.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.orderVolume.noRecords", "No order records found for the selected month.")) + "</div>";
+        return;
+      }
+
+      const monthOptions = getOrderVolumeMonthOptions();
+      const selectedMonthOption = monthOptions.find(function (item) {
+        return Number(item.value || 0) === Number(data.month || 0);
+      });
+      const monthLabel = selectedMonthOption ? selectedMonthOption.label : String(data.month || "");
+      const weekdays = getOrderVolumeWeekdayLabels();
+      const firstWeekday = new Date(Number(data.year), Number(data.month) - 1, 1).getDay();
+      const countMap = new Map(
+        points.map(function (item) {
+          return [Number(item.day), Number(item.count || 0)];
+        }),
+      );
+      const maxCount = points.reduce(function (maxSoFar, item) {
+        return Math.max(maxSoFar, Number(item.count || 0));
+      }, 0);
+
+      const weekdayRowHtml = weekdays
+        .map(function (label) {
+          return '<div class="order-volume-weekday">' + escapeHtml(label) + "</div>";
+        })
+        .join("");
+
+      const gridParts = [];
+      for (let i = 0; i < firstWeekday; i += 1) {
+        gridParts.push('<div class="order-volume-empty-cell" aria-hidden="true"></div>');
+      }
+
+      for (let day = 1; day <= Number(data.days_in_month || 0); day += 1) {
+        const count = Number(countMap.get(day) || 0);
+        const color = getOrderVolumeCellColor(count, maxCount);
+        const textColor = getOrderVolumeTextColor(count, maxCount);
+        const ariaLabel = day + " " + monthLabel + " " + data.year + ": " + count + " " + getTranslatedText("analytics.generated.orderVolume.ordersLabel", "orders");
+
+        gridParts.push('<div class="order-volume-cell" style="background:' + color + ";color:" + textColor + '" title="' + escapeHtml(ariaLabel) + '" aria-label="' + escapeHtml(ariaLabel) + '">' + '<span class="order-volume-day">' + day + "</span>" + '<span class="order-volume-count">' + count + "</span>" + "</div>");
+      }
+
+      chartStateContainer.innerHTML =
+        '<div class="order-volume-wrap">' +
+        '<p class="order-volume-month-title">' +
+        escapeHtml(monthLabel + " " + data.year) +
+        "</p>" +
+        '<div class="order-volume-weekdays">' +
+        weekdayRowHtml +
+        "</div>" +
+        '<div class="order-volume-grid">' +
+        gridParts.join("") +
+        "</div>" +
+        '<div class="order-volume-legend">' +
+        '<span class="order-volume-legend-chip is-low" aria-hidden="true"></span>' +
+        "<span>" +
+        escapeHtml(getTranslatedText("analytics.generated.orderVolume.legendLow", "Low")) +
+        "</span>" +
+        '<span class="order-volume-legend-chip is-high" aria-hidden="true"></span>' +
+        "<span>" +
+        escapeHtml(getTranslatedText("analytics.generated.orderVolume.legendHigh", "High")) +
+        "</span>" +
+        "</div>" +
+        "</div>" +
+        '<p class="chart-summary">' +
+        getTranslatedText("analytics.generated.orderVolume.totalOrders", "Total unique orders") +
+        ": " +
+        Number(data.total_orders || 0) +
+        "</p>";
+    }
+
+    async function fetchAndRenderOrderVolume(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("orderVolumeChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue || !monthValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.orderVolume.selectYearMonthPrompt", "Select Year and Month to generate order volume heatmap.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue, month: monthValue });
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.orderVolume.loading", "Loading Order Volume...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/order-volume/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderOrderVolumeChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.orderVolume.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderOrderVolumePanel() {
+      const monthOptions = getOrderVolumeMonthOptions();
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="orderVolumeYearSelect">' +
+        getTranslatedText("analytics.generated.orderVolume.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="orderVolumeYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.orderVolume.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="orderVolumeMonthSelect">' +
+        getTranslatedText("analytics.generated.orderVolume.monthLabel", "Month") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="orderVolumeMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.orderVolume.note", "Year and Month are mandatory for monthly calendar heatmap.") +
+        "</p>" +
+        '<div id="orderVolumeChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.orderVolume.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("orderVolumeYearSelect");
+      const monthSelect = document.getElementById("orderVolumeMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/order-volume/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.orderVolume.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.orderVolume.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const now = new Date();
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        monthSelect.value = String(now.getMonth() + 1);
+
+        await fetchAndRenderOrderVolume(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderOrderVolume(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderOrderVolume(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.orderVolume.fetchYearsError", "Unable to fetch year filters."));
+      }
     }
 
     async function fetchJson(url) {
@@ -1535,6 +1875,8 @@
           renderTopSellingItemsPanel();
         } else if (analyticsType === "category_performance") {
           renderCategoryPerformancePanel();
+        } else if (analyticsType === "order_volume") {
+          renderOrderVolumePanel();
         } else if (analyticsType === "frequently_bought_together_items") {
           renderMarketBasketPanel();
         } else if (analyticsType === "payment_method_split") {

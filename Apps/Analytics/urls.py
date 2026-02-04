@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from .category_performance import views as category_performance_views
 from .market_basket_analysis import views as market_basket_views
+from .order_volume import views as order_volume_views
 from .payment_method_split import views as payment_method_split_views
 from .revenue_split_by_payment_method import views as revenue_split_views
 from .revenue_trend import views as revenue_trend_views
@@ -76,5 +77,15 @@ urlpatterns = [
         "analytics/api/top-selling-items/<str:dataset_key>/chart/",
         top_selling_items_views.api_top_selling_items_chart,
         name="api_top_selling_items_chart",
+    ),
+    path(
+        "analytics/api/order-volume/<str:dataset_key>/years/",
+        order_volume_views.api_order_volume_years,
+        name="api_order_volume_years",
+    ),
+    path(
+        "analytics/api/order-volume/<str:dataset_key>/chart/",
+        order_volume_views.api_order_volume_chart,
+        name="api_order_volume_chart",
     ),
 ]
