@@ -483,6 +483,82 @@
     background: #166534;
   }
 
+  .day-wise-calendar-wrap {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .day-wise-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .day-wise-calendar-weekday {
+    text-align: center;
+    font-size: 11px;
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .day-wise-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .day-wise-calendar-empty {
+    min-height: 96px;
+    border: 1px solid #f3f4f6;
+    border-radius: 4px;
+    background: #f9fafb;
+  }
+
+  .day-wise-calendar-day {
+    min-height: 96px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #ffffff;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .day-wise-calendar-day-number {
+    font-size: 11px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+  }
+
+  .day-wise-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .day-wise-slot {
+    border-radius: 3px;
+    border: 1px solid #d1d5db;
+    font-size: 10px;
+    line-height: 1.2;
+    padding: 2px 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .day-wise-slot strong {
+    margin-right: 4px;
+  }
+
   @media (max-width: 900px) {
     body.generated-grid-mode {
       overflow: auto;
@@ -541,6 +617,11 @@
       min-height: 44px;
       height: 44px;
     }
+
+    .day-wise-calendar-empty,
+    .day-wise-calendar-day {
+      min-height: 84px;
+    }
   }
 
   @media (max-width: 640px) {
@@ -597,8 +678,8 @@
           <p data-i18n="analytics.generated.revenueSplitByPaymentMethod.desc">Revenue share by Cash, Card, QR and Credit</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="day_wise_pattern">
-          <h3 data-i18n="analytics.generated.dayWisePattern.title">Day-wise Pattern</h3>
-          <p data-i18n="analytics.generated.dayWisePattern.desc">Weekly and day trends</p>
+          <h3 data-i18n="analytics.generated.dayWisePattern.title">Monthly Day-part Sales Trend</h3>
+          <p data-i18n="analytics.generated.dayWisePattern.desc">Morning, Day, Evening intensity by date</p>
         </button>
       </div>
 
@@ -995,6 +1076,219 @@
         return "#052e16";
       }
       return "#1f2937";
+    }
+
+    function getDayWiseIntensityCellStyle(intensity) {
+      const value = Number(intensity || 0);
+      let bg = "#fee2e2";
+      let color = "#1f2937";
+
+      if (value > 80) {
+        bg = "#15803d";
+        color = "#ffffff";
+      } else if (value > 60) {
+        bg = "#22c55e";
+        color = "#052e16";
+      } else if (value > 40) {
+        bg = "#86efac";
+        color = "#052e16";
+      } else if (value > 20) {
+        bg = "#ef4444";
+        color = "#ffffff";
+      } else if (value > 0) {
+        bg = "#fca5a5";
+        color = "#1f2937";
+      }
+
+      return "background:" + bg + ";color:" + color + ";font-weight:700;";
+    }
+
+    function buildDayWiseSlotHtml(label, bucketData) {
+      const count = Number(bucketData?.sales_count || 0);
+      const amount = Number(bucketData?.sales_amount || 0);
+      const intensity = Number(bucketData?.intensity || 0);
+      const style = getDayWiseIntensityCellStyle(intensity);
+
+      return '<div class="day-wise-slot" style="' + style + '"><strong>' + escapeHtml(label) + "</strong>" + count + " | " + amount.toFixed(2) + "</div>";
+    }
+
+    function renderDayWisePatternChartState(data) {
+      const chartStateContainer = document.getElementById("dayWisePatternChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      const points = Array.isArray(data.points) ? data.points : [];
+      if (!points.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.dayWisePattern.noRecords", "No sales records found for the selected month.")) + "</div>";
+        return;
+      }
+
+      const weekdays = getOrderVolumeWeekdayLabels();
+      const firstWeekday = new Date(Number(data.year), Number(data.month) - 1, 1).getDay();
+      const weekdayRowHtml = weekdays
+        .map(function (label) {
+          return '<div class="day-wise-calendar-weekday">' + escapeHtml(label) + "</div>";
+        })
+        .join("");
+
+      const dayMap = new Map(
+        points.map(function (point) {
+          return [Number(point.day || 0), point];
+        }),
+      );
+
+      const gridParts = [];
+      for (let i = 0; i < firstWeekday; i += 1) {
+        gridParts.push('<div class="day-wise-calendar-empty" aria-hidden="true"></div>');
+      }
+
+      for (let day = 1; day <= Number(data.days_in_month || 0); day += 1) {
+        const point = dayMap.get(day) || { morning: {}, daytime: {}, evening: {} };
+        const ariaLabel = day + " " + getTranslatedText("analytics.generated.dayWisePattern.dayColumn", "Day");
+
+        gridParts.push(
+          '<div class="day-wise-calendar-day" aria-label="' +
+            escapeHtml(ariaLabel) +
+            '">' +
+            '<div class="day-wise-calendar-day-number">' +
+            day +
+            "</div>" +
+            '<div class="day-wise-slots">' +
+            buildDayWiseSlotHtml(getTranslatedText("analytics.generated.dayWisePattern.morningColumn", "Morning"), point.morning) +
+            buildDayWiseSlotHtml(getTranslatedText("analytics.generated.dayWisePattern.daytimeColumn", "Day"), point.daytime) +
+            buildDayWiseSlotHtml(getTranslatedText("analytics.generated.dayWisePattern.eveningColumn", "Evening"), point.evening) +
+            "</div>" +
+            "</div>",
+        );
+      }
+
+      const monthOptions = getOrderVolumeMonthOptions();
+      const selectedMonthOption = monthOptions.find(function (item) {
+        return Number(item.value || 0) === Number(data.month || 0);
+      });
+      const monthLabel = selectedMonthOption ? selectedMonthOption.label : String(data.month || "");
+
+      chartStateContainer.innerHTML =
+        '<div class="day-wise-calendar-wrap">' +
+        '<p class="order-volume-month-title">' +
+        escapeHtml(monthLabel + " " + data.year) +
+        "</p>" +
+        '<div class="day-wise-calendar-weekdays">' +
+        weekdayRowHtml +
+        "</div>" +
+        '<div class="day-wise-calendar-grid">' +
+        gridParts.join("") +
+        "</div>" +
+        "</div>" +
+        '<p class="chart-summary">' +
+        getTranslatedText("analytics.generated.dayWisePattern.salesCountTotal", "Total sales count") +
+        ": " +
+        Number(data.total_sales_count || 0) +
+        " | " +
+        getTranslatedText("analytics.generated.dayWisePattern.salesAmountTotal", "Total sales amount") +
+        ": Rs. " +
+        Number(data.total_sales_amount || 0).toFixed(2) +
+        "</p>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.dayWisePattern.intensityLegend", "Each cell shows: sales count | sales amount. Red means low intensity, green means high intensity.") +
+        "</p>";
+    }
+
+    async function fetchAndRenderDayWisePattern(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("dayWisePatternChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue || !monthValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.dayWisePattern.selectYearMonthPrompt", "Select Year and Month to generate day-wise pattern.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue, month: monthValue });
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.dayWisePattern.loading", "Loading day-wise pattern...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/day-wise-pattern/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderDayWisePatternChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.dayWisePattern.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderDayWisePatternPanel() {
+      const monthOptions = getOrderVolumeMonthOptions();
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="dayWisePatternYearSelect">' +
+        getTranslatedText("analytics.generated.dayWisePattern.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="dayWisePatternYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.dayWisePattern.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="dayWisePatternMonthSelect">' +
+        getTranslatedText("analytics.generated.dayWisePattern.monthLabel", "Month") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="dayWisePatternMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.dayWisePattern.note", "Monthly view grouped by Morning, Day, and Evening with sales intensity.") +
+        "</p>" +
+        '<div id="dayWisePatternChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.dayWisePattern.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("dayWisePatternYearSelect");
+      const monthSelect = document.getElementById("dayWisePatternMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/day-wise-pattern/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.dayWisePattern.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.dayWisePattern.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const now = new Date();
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        monthSelect.value = String(now.getMonth() + 1);
+
+        await fetchAndRenderDayWisePattern(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderDayWisePattern(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderDayWisePattern(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.dayWisePattern.fetchYearsError", "Unable to fetch year filters."));
+      }
     }
 
     function renderOrderVolumeChartState(data) {
@@ -1877,6 +2171,8 @@
           renderCategoryPerformancePanel();
         } else if (analyticsType === "order_volume") {
           renderOrderVolumePanel();
+        } else if (analyticsType === "day_wise_pattern") {
+          renderDayWisePatternPanel();
         } else if (analyticsType === "frequently_bought_together_items") {
           renderMarketBasketPanel();
         } else if (analyticsType === "payment_method_split") {

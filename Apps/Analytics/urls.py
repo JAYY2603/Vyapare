@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from .category_performance import views as category_performance_views
+from .day_wise_pattern import views as day_wise_pattern_views
 from .market_basket_analysis import views as market_basket_views
 from .order_volume import views as order_volume_views
 from .payment_method_split import views as payment_method_split_views
@@ -87,5 +88,15 @@ urlpatterns = [
         "analytics/api/order-volume/<str:dataset_key>/chart/",
         order_volume_views.api_order_volume_chart,
         name="api_order_volume_chart",
+    ),
+    path(
+        "analytics/api/day-wise-pattern/<str:dataset_key>/years/",
+        day_wise_pattern_views.api_day_wise_pattern_years,
+        name="api_day_wise_pattern_years",
+    ),
+    path(
+        "analytics/api/day-wise-pattern/<str:dataset_key>/chart/",
+        day_wise_pattern_views.api_day_wise_pattern_chart,
+        name="api_day_wise_pattern_chart",
     ),
 ]
