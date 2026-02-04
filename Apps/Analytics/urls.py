@@ -6,6 +6,7 @@ from .market_basket_analysis import views as market_basket_views
 from .payment_method_split import views as payment_method_split_views
 from .revenue_split_by_payment_method import views as revenue_split_views
 from .revenue_trend import views as revenue_trend_views
+from .top_selling_items import views as top_selling_items_views
 
 app_name = "analytics"
 
@@ -65,5 +66,15 @@ urlpatterns = [
         "analytics/api/market-basket-analysis/<str:dataset_key>/chart/",
         market_basket_views.api_market_basket_chart,
         name="api_market_basket_chart",
+    ),
+    path(
+        "analytics/api/top-selling-items/<str:dataset_key>/years/",
+        top_selling_items_views.api_top_selling_items_years,
+        name="api_top_selling_items_years",
+    ),
+    path(
+        "analytics/api/top-selling-items/<str:dataset_key>/chart/",
+        top_selling_items_views.api_top_selling_items_chart,
+        name="api_top_selling_items_chart",
     ),
 ]
