@@ -96,8 +96,16 @@
     background: linear-gradient(180deg, #2f8f2f 0%, #64b85a 100%);
   }
 
+  .metric-grid > .metric-card:nth-child(3n + 1)::before {
+    background: linear-gradient(180deg, #111111 0%, #333333 100%);
+  }
+
   .metric-grid > .metric-card:nth-child(3n + 2)::before {
     background: linear-gradient(180deg, #1d4ed8 0%, #3b82f6 100%);
+  }
+
+  .metric-grid > .metric-card:nth-child(3n)::before {
+    background: linear-gradient(180deg, #6d28d9 0%, #8b5cf6 100%);
   }
 
   .metric-card:hover {
@@ -326,6 +334,61 @@
     background: #f7fcf7;
     padding: 12px;
     text-align: center;
+  }
+
+  .payment-vs-category-table-wrap {
+    border: 1px solid #d5ead5;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #fcfffc 0%, #f2faf2 100%);
+    padding: 10px;
+    overflow: auto;
+  }
+
+  .payment-vs-category-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #1f2937;
+    background: #ffffff;
+  }
+
+  .payment-vs-category-table th,
+  .payment-vs-category-table td {
+    border: 1px solid #deebde;
+    padding: 8px 10px;
+    text-align: right;
+    vertical-align: middle;
+  }
+
+  .payment-vs-category-table th {
+    background: #ecf7ec;
+    font-weight: 700;
+    color: #1f4f1f;
+  }
+
+  .payment-vs-category-table th:first-child,
+  .payment-vs-category-table td:first-child {
+    text-align: left;
+  }
+
+  .payment-vs-category-row-total {
+    font-weight: 700;
+    color: #123612;
+    background: #f4fbf4;
+  }
+
+  .payment-vs-category-cell-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: #5b6470;
+  }
+
+  .payment-vs-category-cell-max {
+    background: #dcfce7;
+    border-color: #86efac;
+    font-weight: 700;
   }
 
   .revenue-trend-chart-wrap {
@@ -645,41 +708,41 @@
 
     <div class="analytics-workspace" id="analyticsWorkspace">
       <div class="metric-grid" id="metricGrid">
-        <button class="metric-card" type="button" data-analytics-type="sales_overview">
-          <h3 data-i18n="analytics.generated.salesOverview.title">Sales Overview</h3>
-          <p data-i18n="analytics.generated.salesOverview.desc">Quick totals and order distribution</p>
+        <button class="metric-card" type="button" data-analytics-type="top_selling_items">
+          <h3 data-i18n="analytics.generated.topSellingItems.title">Top Selling Items</h3>
+          <p data-i18n="analytics.generated.topSellingItems.desc">Best performing products</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="revenue_trend">
           <h3 data-i18n="analytics.generated.revenueTrend.title">Revenue Trend</h3>
           <p data-i18n="analytics.generated.revenueTrend.desc">Revenue movement over time</p>
         </button>
-        <button class="metric-card" type="button" data-analytics-type="top_selling_items">
-          <h3 data-i18n="analytics.generated.topSellingItems.title">Top Selling Items</h3>
-          <p data-i18n="analytics.generated.topSellingItems.desc">Best performing products</p>
+        <button class="metric-card" type="button" data-analytics-type="payment_method_split">
+          <h3 data-i18n="analytics.generated.paymentMethodSplit.title">Payment Method Split</h3>
+          <p data-i18n="analytics.generated.paymentMethodSplit.desc">Cash, Card, QR and Credit share</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="category_performance">
           <h3 data-i18n="analytics.generated.categoryPerformance.title">Category Performance</h3>
           <p data-i18n="analytics.generated.categoryPerformance.desc">Sales split by category</p>
         </button>
-        <button class="metric-card" type="button" data-analytics-type="payment_method_split">
-          <h3 data-i18n="analytics.generated.paymentMethodSplit.title">Payment Method Split</h3>
-          <p data-i18n="analytics.generated.paymentMethodSplit.desc">Cash, Card, QR and Credit share</p>
-        </button>
         <button class="metric-card" type="button" data-analytics-type="order_volume">
           <h3 data-i18n="analytics.generated.orderVolume.title">Order Volume</h3>
           <p data-i18n="analytics.generated.orderVolume.desc">Order count and density</p>
-        </button>
-        <button class="metric-card" type="button" data-analytics-type="frequently_bought_together_items">
-          <h3 data-i18n="analytics.generated.frequentlyBoughtTogether.title">Frequently Bought Together Items</h3>
-          <p data-i18n="analytics.generated.frequentlyBoughtTogether.desc">Market Basket Analysis (MBA) combinations</p>
         </button>
         <button class="metric-card" type="button" data-analytics-type="revenue_split_by_payment_method">
           <h3 data-i18n="analytics.generated.revenueSplitByPaymentMethod.title">Revenue Split by Payment Method</h3>
           <p data-i18n="analytics.generated.revenueSplitByPaymentMethod.desc">Revenue share by Cash, Card, QR and Credit</p>
         </button>
+        <button class="metric-card" type="button" data-analytics-type="frequently_bought_together_items">
+          <h3 data-i18n="analytics.generated.frequentlyBoughtTogether.title">Frequently Bought Together Items</h3>
+          <p data-i18n="analytics.generated.frequentlyBoughtTogether.desc">Market Basket Analysis (MBA) combinations</p>
+        </button>
         <button class="metric-card" type="button" data-analytics-type="day_wise_pattern">
           <h3 data-i18n="analytics.generated.dayWisePattern.title">Monthly Day-part Sales Trend</h3>
           <p data-i18n="analytics.generated.dayWisePattern.desc">Morning, Day, Evening intensity by date</p>
+        </button>
+        <button class="metric-card" type="button" data-analytics-type="sales_overview">
+          <h3 data-i18n="analytics.generated.salesOverview.title">Payment vs Category</h3>
+          <p data-i18n="analytics.generated.salesOverview.desc">Payment method distribution across categories</p>
         </button>
       </div>
 
@@ -909,6 +972,63 @@
       const legend = document.getElementById("categoryPerformanceLegend");
       drawPieChart(canvas, data.split);
       legend.innerHTML = buildCategoryLegendHtml(data.split);
+    }
+
+    function renderPaymentVsCategoryChartState(data) {
+      const chartStateContainer = document.getElementById("paymentVsCategoryChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      const categories = Array.isArray(data.categories) ? data.categories : [];
+      const paymentMethods = Array.isArray(data.payment_methods) ? data.payment_methods : [];
+      if (!categories.length || !paymentMethods.length) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.noRecords", "No payment/category records found for the selected filter.")) + "</div>";
+        return;
+      }
+
+      const headerColumns = paymentMethods
+        .map(function (method) {
+          return "<th>" + escapeHtml(method) + "</th>";
+        })
+        .join("");
+
+      const rowsHtml = categories
+        .map(function (row) {
+          const split = Array.isArray(row.split) ? row.split : [];
+          const maxCount = split.reduce(function (maxSoFar, cell) {
+            return Math.max(maxSoFar, Number(cell.count || 0));
+          }, 0);
+          const cells = split
+            .map(function (cell) {
+              const count = Number(cell.count || 0);
+              const isMax = maxCount > 0 && count === maxCount;
+              const cellClass = isMax ? ' class="payment-vs-category-cell-max"' : "";
+              return "<td" + cellClass + ">" + count + '<span class="payment-vs-category-cell-meta">' + Number(cell.percentage || 0).toFixed(2) + "%</span></td>";
+            })
+            .join("");
+
+          return "<tr>" +
+            "<td>" + escapeHtml(String(row.category || "Unknown")) + "</td>" +
+            cells +
+            '<td class="payment-vs-category-row-total">' + Number(row.total_records || 0) + "</td>" +
+            "</tr>";
+        })
+        .join("");
+
+      chartStateContainer.innerHTML =
+        '<div class="payment-vs-category-table-wrap">' +
+        '<table class="payment-vs-category-table">' +
+        "<thead><tr><th>" +
+        escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.categoryColumn", "Category")) +
+        "</th>" +
+        headerColumns +
+        "<th>" +
+        escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.totalColumn", "Total Orders")) +
+        "</th></tr></thead>" +
+        "<tbody>" + rowsHtml + "</tbody>" +
+        "</table>" +
+        "</div>";
     }
 
     function buildRevenueTrendValuesHtml(points) {
@@ -1484,6 +1604,120 @@
       }
 
       return payload;
+    }
+
+    async function fetchAndRenderPaymentVsCategory(yearValue, monthValue) {
+      const chartStateContainer = document.getElementById("paymentVsCategoryChartState");
+      if (!chartStateContainer) {
+        return;
+      }
+
+      if (!yearValue) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.selectYearPrompt", "Select Year to generate payment vs category.")) + "</div>";
+        return;
+      }
+
+      const query = new URLSearchParams({ year: yearValue });
+      if (monthValue) {
+        query.append("month", monthValue);
+      }
+
+      chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.loading", "Loading Payment vs Category...")) + "</div>";
+
+      try {
+        const data = await fetchJson("/analytics/api/payment-vs-category/" + encodeURIComponent(datasetKey) + "/chart/?" + query.toString());
+        renderPaymentVsCategoryChartState(data);
+      } catch (error) {
+        chartStateContainer.innerHTML = '<div class="analytics-inline-message">' + escapeHtml(error.message || getTranslatedText("analytics.generated.paymentVsCategory.loadError", "Unable to load analytics.")) + "</div>";
+      }
+    }
+
+    async function renderPaymentVsCategoryPanel() {
+      const monthOptions = [
+        {
+          value: "",
+          label: getTranslatedText("analytics.generated.paymentMethodSplit.months.all", "All Months"),
+        },
+        { value: "1", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jan", "Jan") },
+        { value: "2", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.feb", "Feb") },
+        { value: "3", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.mar", "Mar") },
+        { value: "4", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.apr", "Apr") },
+        { value: "5", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.may", "May") },
+        { value: "6", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jun", "Jun") },
+        { value: "7", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.jul", "Jul") },
+        { value: "8", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.aug", "Aug") },
+        { value: "9", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.sep", "Sep") },
+        { value: "10", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.oct", "Oct") },
+        { value: "11", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.nov", "Nov") },
+        { value: "12", label: getTranslatedText("analytics.generated.paymentMethodSplit.months.dec", "Dec") },
+      ];
+
+      panelBody.innerHTML =
+        '<div class="payment-method-controls">' +
+        '  <div class="control-field">' +
+        '    <label for="paymentVsCategoryYearSelect">' +
+        getTranslatedText("analytics.generated.paymentVsCategory.yearLabel", "Year") +
+        ' <span style="color:#b42318">*</span></label>' +
+        '    <select id="paymentVsCategoryYearSelect"><option value="">' +
+        getTranslatedText("analytics.generated.paymentVsCategory.selectYear", "Select Year") +
+        "</option></select>" +
+        "  </div>" +
+        '  <div class="control-field">' +
+        '    <label for="paymentVsCategoryMonthSelect">' +
+        getTranslatedText("analytics.generated.paymentVsCategory.monthLabel", "Month (Optional)") +
+        "</label>" +
+        '    <select id="paymentVsCategoryMonthSelect"></select>' +
+        "  </div>" +
+        "</div>" +
+        '<p class="control-note">' +
+        getTranslatedText("analytics.generated.paymentVsCategory.note", "Year is mandatory. Month filter is optional.") +
+        "</p>" +
+        '<div id="paymentVsCategoryChartState" class="analytics-inline-message">' +
+        getTranslatedText("analytics.generated.paymentVsCategory.loadingYears", "Loading years...") +
+        "</div>";
+
+      const yearSelect = document.getElementById("paymentVsCategoryYearSelect");
+      const monthSelect = document.getElementById("paymentVsCategoryMonthSelect");
+
+      monthSelect.innerHTML = monthOptions
+        .map(function (month) {
+          return '<option value="' + month.value + '">' + month.label + "</option>";
+        })
+        .join("");
+
+      try {
+        const yearsPayload = await fetchJson("/analytics/api/payment-vs-category/" + encodeURIComponent(datasetKey) + "/years/");
+        const years = yearsPayload.years || [];
+
+        if (!years.length) {
+          renderInlineMessage(getTranslatedText("analytics.generated.paymentVsCategory.noYears", "No valid year values found in this dataset."));
+          return;
+        }
+
+        yearSelect.innerHTML =
+          '<option value="">' +
+          getTranslatedText("analytics.generated.paymentVsCategory.selectYear", "Select Year") +
+          "</option>" +
+          years
+            .map(function (year) {
+              return '<option value="' + year + '">' + year + "</option>";
+            })
+            .join("");
+
+        const defaultYear = String(years[years.length - 1]);
+        yearSelect.value = defaultYear;
+        await fetchAndRenderPaymentVsCategory(yearSelect.value, monthSelect.value);
+
+        yearSelect.addEventListener("change", function () {
+          fetchAndRenderPaymentVsCategory(yearSelect.value, monthSelect.value);
+        });
+
+        monthSelect.addEventListener("change", function () {
+          fetchAndRenderPaymentVsCategory(yearSelect.value, monthSelect.value);
+        });
+      } catch (error) {
+        renderInlineMessage(error.message || getTranslatedText("analytics.generated.paymentVsCategory.fetchYearsError", "Unable to fetch year filters."));
+      }
     }
 
     async function fetchAndRenderSplit(yearValue, monthValue) {
@@ -2179,6 +2413,8 @@
           renderPaymentMethodSplitPanel();
         } else if (analyticsType === "revenue_split_by_payment_method") {
           renderRevenueSplitPanel();
+        } else if (analyticsType === "sales_overview") {
+          renderPaymentVsCategoryPanel();
         } else {
           renderInlineMessage(getTranslatedText("analytics.generated.placeholderNotIntegrated", "This analytics card UI is ready. API integration will be added next."));
         }

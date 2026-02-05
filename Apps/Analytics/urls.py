@@ -5,6 +5,7 @@ from .category_performance import views as category_performance_views
 from .day_wise_pattern import views as day_wise_pattern_views
 from .market_basket_analysis import views as market_basket_views
 from .order_volume import views as order_volume_views
+from .payment_vs_category import views as payment_vs_category_views
 from .payment_method_split import views as payment_method_split_views
 from .revenue_split_by_payment_method import views as revenue_split_views
 from .revenue_trend import views as revenue_trend_views
@@ -18,6 +19,16 @@ urlpatterns = [
         "analytics/generated/<str:dataset_key>/",
         views.generated_analytics,
         name="generated_analytics",
+    ),
+    path(
+        "analytics/api/payment-vs-category/<str:dataset_key>/years/",
+        payment_vs_category_views.api_payment_vs_category_years,
+        name="api_payment_vs_category_years",
+    ),
+    path(
+        "analytics/api/payment-vs-category/<str:dataset_key>/chart/",
+        payment_vs_category_views.api_payment_vs_category_chart,
+        name="api_payment_vs_category_chart",
     ),
     path(
         "analytics/api/payment-method-split/<str:dataset_key>/years/",
