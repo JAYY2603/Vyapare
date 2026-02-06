@@ -18,7 +18,8 @@ def _read_dataset_frame(dataset_file_path):
             usecols=[DATE_COLUMN, CATEGORY_COLUMN, PAYMENT_TYPE_COLUMN],
         )
     except Exception as exc:
-        raise PaymentVsCategoryServiceError("Unable to read dataset file.") from exc
+        raise PaymentVsCategoryServiceError(
+            "Unable to read dataset file.") from exc
 
     required_columns = {DATE_COLUMN, CATEGORY_COLUMN, PAYMENT_TYPE_COLUMN}
     if not required_columns.issubset(set(frame.columns)):
@@ -100,7 +101,8 @@ def get_payment_vs_category(dataset_file_path, year, month=None):
                 category_slice[PAYMENT_TYPE_COLUMN] == payment_method
             ]
             count = int(match["count"].iloc[0]) if not match.empty else 0
-            percentage = round((count / category_total) * 100, 2) if category_total else 0.0
+            percentage = round((count / category_total) *
+                               100, 2) if category_total else 0.0
 
             split_payload.append(
                 {

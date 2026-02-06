@@ -1,0 +1,354 @@
+{% extends 'home/base.html' %} {% block title %}Vyapare - Chatbot{% endblock %} {% block extra_css %}
+<style>
+  .chatbot-page {
+    min-height: calc(100vh - 72px);
+    padding: 24px 20px 30px;
+    background: radial-gradient(circle at 0% 0%, #eef9ee 0%, #f7fbff 50%, #eef6ff 100%);
+  }
+
+  .chatbot-container {
+    max-width: 980px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #d6e7d6;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(26, 86, 28, 0.12);
+    overflow: hidden;
+  }
+
+  .chatbot-header {
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #1f8a1f 0%, #2ea34a 100%);
+    color: #ffffff;
+  }
+
+  .chatbot-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+  }
+
+  .chatbot-header p {
+    margin: 4px 0 0;
+    font-size: 0.95rem;
+    opacity: 0.95;
+  }
+
+  .chatbot-body {
+    padding: 16px;
+  }
+
+  .dataset-upload {
+    border: 1px solid #d9e6d9;
+    border-radius: 10px;
+    padding: 12px;
+    background: #f7fff7;
+    margin-bottom: 12px;
+  }
+
+  .dataset-upload h2 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: #14532d;
+  }
+
+  .dataset-upload p {
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+    color: #3f6212;
+  }
+
+  .upload-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .upload-form input[type="file"] {
+    border: 1px solid #c6dcc6;
+    border-radius: 8px;
+    padding: 8px;
+    background: #ffffff;
+    color: #1f2937;
+  }
+
+  .upload-meta {
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: #065f46;
+    min-height: 18px;
+  }
+
+  .chat-log {
+    height: 460px;
+    overflow-y: auto;
+    border: 1px solid #d9e6d9;
+    border-radius: 10px;
+    background: #fcfffc;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chat-bubble {
+    max-width: 84%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .chat-bubble.user {
+    align-self: flex-end;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #14532d;
+  }
+
+  .chat-bubble.assistant {
+    align-self: flex-start;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #1e3a8a;
+  }
+
+  .chatbot-form {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .chatbot-form textarea {
+    width: 100%;
+    min-height: 54px;
+    max-height: 120px;
+    resize: vertical;
+    border: 1px solid #c6dcc6;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.95rem;
+    color: #1f2937;
+  }
+
+  .chatbot-status {
+    margin-top: 8px;
+    min-height: 20px;
+    font-size: 0.9rem;
+    color: #475569;
+  }
+
+  @media (max-width: 760px) {
+    .upload-form {
+      grid-template-columns: 1fr;
+    }
+
+    .chat-log {
+      height: 380px;
+    }
+
+    .chat-bubble {
+      max-width: 92%;
+    }
+
+    .chatbot-form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<section class="chatbot-page">
+  <div class="chatbot-container">
+    <header class="chatbot-header">
+      <h1>Business Assistant Chatbot</h1>
+      <p>Ask only business-related questions: sales, profit, pricing, inventory, operations, and growth strategy.</p>
+    </header>
+
+    <div class="chatbot-body">
+      <section class="dataset-upload">
+        <h2>1. Upload Dataset</h2>
+        <p>Upload an Excel or CSV file first. The assistant will answer questions based on this dataset.</p>
+        <form id="datasetUploadForm" class="upload-form">
+          {% csrf_token %}
+          <input id="datasetFile" type="file" accept=".xlsx,.xls,.csv" required />
+          <button type="submit" class="btn btn-secondary" id="uploadBtn">Upload</button>
+        </form>
+        <div id="uploadMeta" class="upload-meta"></div>
+      </section>
+
+      <div id="chatLog" class="chat-log" aria-live="polite" aria-label="Chat conversation"></div>
+
+      <form id="chatbotForm" class="chatbot-form">
+        {% csrf_token %}
+        <textarea id="chatInput" placeholder="Upload dataset first, then ask a question..." required disabled></textarea>
+        <button type="submit" class="btn btn-primary" id="sendBtn">Send</button>
+      </form>
+      <p class="chatbot-status" id="chatStatus"></p>
+    </div>
+  </div>
+</section>
+{% endblock %} {% block extra_js %}
+<script>
+  (function () {
+    const datasetUploadForm = document.getElementById("datasetUploadForm");
+    const datasetFileInput = document.getElementById("datasetFile");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const uploadMeta = document.getElementById("uploadMeta");
+    const form = document.getElementById("chatbotForm");
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const chatLog = document.getElementById("chatLog");
+    const chatStatus = document.getElementById("chatStatus");
+
+    const history = [];
+    let datasetReady = false;
+
+    function readCookie(name) {
+      const cookie = document.cookie
+        .split(";")
+        .map(function (part) {
+          return part.trim();
+        })
+        .find(function (part) {
+          return part.startsWith(name + "=");
+        });
+
+      return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    }
+
+    function appendMessage(role, content) {
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble " + role;
+      bubble.textContent = content;
+      chatLog.appendChild(bubble);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    async function sendMessage(message) {
+      const response = await fetch("{% url 'chatbot:api_chatbot_message' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": readCookie("csrftoken"),
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          message: message,
+          history: history,
+        }),
+      });
+
+      let payload = {};
+      try {
+        payload = await response.json();
+      } catch (error) {
+        payload = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(payload.message || "Failed to get chatbot response.");
+      }
+
+      return payload.reply || "I could not generate a response right now.";
+    }
+
+    async function uploadDataset(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("{% url 'chatbot:api_chatbot_upload_dataset' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": readCookie("csrftoken"),
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      let payload = {};
+      try {
+        payload = await response.json();
+      } catch (error) {
+        payload = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(payload.message || "Dataset upload failed.");
+      }
+
+      return payload;
+    }
+
+    sendBtn.disabled = true;
+    appendMessage("assistant", "Hello. Please upload an Excel or CSV dataset first. I will answer questions based on that dataset.");
+
+    datasetUploadForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const selectedFile = datasetFileInput.files && datasetFileInput.files[0];
+      if (!selectedFile) {
+        uploadMeta.textContent = "Please choose a file before uploading.";
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadMeta.textContent = "Uploading and analyzing dataset...";
+
+      try {
+        const result = await uploadDataset(selectedFile);
+        const ds = result.dataset || {};
+        datasetReady = true;
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.placeholder = "Ask any question about your uploaded dataset...";
+        history.length = 0;
+        uploadMeta.textContent = "Uploaded: " + (ds.name || selectedFile.name) + " | Rows: " + (ds.rows || 0) + " | Columns: " + (ds.columns || 0);
+        appendMessage("assistant", "Dataset uploaded successfully. You can now ask questions related to this dataset.");
+      } catch (error) {
+        datasetReady = false;
+        sendBtn.disabled = true;
+        input.disabled = true;
+        uploadMeta.textContent = error.message || "Upload failed.";
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    });
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      if (!datasetReady) {
+        appendMessage("assistant", "Please upload a dataset first.");
+        return;
+      }
+
+      const message = input.value.trim();
+      if (!message) {
+        return;
+      }
+
+      appendMessage("user", message);
+      history.push({ role: "user", content: message });
+      input.value = "";
+
+      sendBtn.disabled = true;
+      chatStatus.textContent = "Thinking...";
+
+      try {
+        const reply = await sendMessage(message);
+        appendMessage("assistant", reply);
+        history.push({ role: "assistant", content: reply });
+      } catch (error) {
+        appendMessage("assistant", error.message || "Something went wrong. Please try again.");
+      } finally {
+        sendBtn.disabled = false;
+        chatStatus.textContent = "";
+        input.focus();
+      }
+    });
+  })();
+</script>
+{% endblock %}

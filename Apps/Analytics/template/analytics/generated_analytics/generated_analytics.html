@@ -1008,27 +1008,11 @@
             })
             .join("");
 
-          return "<tr>" +
-            "<td>" + escapeHtml(String(row.category || "Unknown")) + "</td>" +
-            cells +
-            '<td class="payment-vs-category-row-total">' + Number(row.total_records || 0) + "</td>" +
-            "</tr>";
+          return "<tr>" + "<td>" + escapeHtml(String(row.category || "Unknown")) + "</td>" + cells + '<td class="payment-vs-category-row-total">' + Number(row.total_records || 0) + "</td>" + "</tr>";
         })
         .join("");
 
-      chartStateContainer.innerHTML =
-        '<div class="payment-vs-category-table-wrap">' +
-        '<table class="payment-vs-category-table">' +
-        "<thead><tr><th>" +
-        escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.categoryColumn", "Category")) +
-        "</th>" +
-        headerColumns +
-        "<th>" +
-        escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.totalColumn", "Total Orders")) +
-        "</th></tr></thead>" +
-        "<tbody>" + rowsHtml + "</tbody>" +
-        "</table>" +
-        "</div>";
+      chartStateContainer.innerHTML = '<div class="payment-vs-category-table-wrap">' + '<table class="payment-vs-category-table">' + "<thead><tr><th>" + escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.categoryColumn", "Category")) + "</th>" + headerColumns + "<th>" + escapeHtml(getTranslatedText("analytics.generated.paymentVsCategory.totalColumn", "Total Orders")) + "</th></tr></thead>" + "<tbody>" + rowsHtml + "</tbody>" + "</table>" + "</div>";
     }
 
     function buildRevenueTrendValuesHtml(points) {

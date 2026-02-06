@@ -10,10 +10,30 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv(env_path):
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -40,6 +60,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'Apps.Home.apps.HomeConfig',
+    'Apps.Chatbot.apps.ChatbotConfig',
     'Apps.Dataset.apps.DatasetConfig',
     'Apps.Analytics.apps.AnalyticsConfig',
     'Apps.Predictions.apps.PredictionsConfig',
@@ -62,6 +83,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'Apps' / 'Home' / 'template',
+            BASE_DIR / 'Apps' / 'Chatbot' / 'template',
             BASE_DIR / 'Apps' / 'Dataset' / 'template',
             BASE_DIR / 'Apps' / 'Analytics' / 'template',
             BASE_DIR / 'Apps' / 'Predictions' / 'template',
@@ -146,3 +168,6 @@ SPECTACULAR_SETTINGS = {
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/datasets/'
+
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.1-8b-instant')

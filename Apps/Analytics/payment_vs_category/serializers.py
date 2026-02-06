@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 
 class PaymentVsCategoryQuerySerializer(serializers.Serializer):
-    year = serializers.IntegerField(required=True, min_value=1900, max_value=3000)
+    year = serializers.IntegerField(
+        required=True, min_value=1900, max_value=3000)
     month = serializers.IntegerField(required=False, min_value=1, max_value=12)
 
 

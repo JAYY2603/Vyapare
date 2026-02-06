@@ -21,7 +21,8 @@ from .service import (
 
 def _resolve_user_dataset_path(user_id, dataset_key):
     safe_name = Path(dataset_key).name
-    user_folder = Path(settings.DATASET_STORAGE_ROOT) / "uploaded_datasets" / str(user_id)
+    user_folder = Path(settings.DATASET_STORAGE_ROOT) / \
+        "uploaded_datasets" / str(user_id)
     target_path = (user_folder / safe_name).resolve()
 
     try:
@@ -77,7 +78,8 @@ def api_payment_vs_category_chart(request, dataset_key):
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    query_serializer = PaymentVsCategoryQuerySerializer(data=request.query_params)
+    query_serializer = PaymentVsCategoryQuerySerializer(
+        data=request.query_params)
     if not query_serializer.is_valid():
         return Response(
             {

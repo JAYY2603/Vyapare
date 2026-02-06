@@ -944,6 +944,20 @@ main.main-content {
   overflow: hidden;
 }
 
+.dataset-empty-section {
+  background-color: #ffffff;
+  border: 1px dashed #b8d7b8;
+  border-radius: 10px;
+  padding: 36px 24px;
+  text-align: center;
+}
+
+.dataset-empty-message {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: #5f6368;
+}
+
 .dataset-table {
   width: 100%;
   border-collapse: collapse;

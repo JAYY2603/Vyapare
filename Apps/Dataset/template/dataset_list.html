@@ -10,7 +10,7 @@
       {% if datasets %}
       <h2 data-i18n="dataset.yourDatasets">Your Datasets</h2>
       {% else %}
-      <div></div>
+      <h2 data-i18n="dataset.yourDatasets">Your Datasets</h2>
       {% endif %}
       <button type="button" class="btn btn-primary" id="openCreateDatasetModal" data-i18n="dataset.createButton">Create New Dataset</button>
     </div>
@@ -47,6 +47,10 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+    {% else %}
+    <div class="dataset-empty-section" role="status" aria-live="polite">
+      <p class="dataset-empty-message" data-i18n="dataset.emptyState">No Datasets available. Click on "Create New Dataset" to get started.</p>
     </div>
     {% endif %}
   </div>

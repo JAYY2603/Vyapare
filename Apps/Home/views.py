@@ -56,11 +56,6 @@ def analytics(request):
 
 
 @login_required
-def user_chatbot(request):
-    return simple_page(request, "Chatbot", "Chatbot page is coming soon.")
-
-
-@login_required
 def admin_dashboard(request):
     return simple_page(request, "Users", "Admin dashboard page is coming soon.")
 
